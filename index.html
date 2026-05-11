@@ -1031,7 +1031,7 @@ function p2FindMaxPrice(cfg, funds, yieldPct, annualRent, lvrCapPct) {
     rate:params.rate,buf:cfg.buf,assessRate:params.rate+cfg.buf,
     icr:params.icr,icrActual:icrActual,
     monthlyIO:loan*params.rate/100/12,
-    appFee:loan*cfg.app/100,valWaive:valWaive
+    appFee:loan*cfg.app/100,appPct:cfg.app,valWaive:valWaive
   };
 }
 
@@ -1160,10 +1160,9 @@ function p2RenderCompareTable(winner, cheapest) {
     '</tr>'+ccDetail+
     row('Rate (Actual)',    pF(winner,'rate'), pF(cheapest,'rate'))+
     row('Assessment Rate', winner?winner.assessRate.toFixed(2)+'%':'\u2014', cheapest?cheapest.assessRate.toFixed(2)+'%':'\u2014')+
-    row('ICR Required',    winner?winner.icr.toFixed(2)+'\xd7':'\u2014', cheapest?cheapest.icr.toFixed(2)+'\xd7':'\u2014')+
     row('ICR Achieved',    winner?winner.icrActual.toFixed(2)+'\xd7':'\u2014', cheapest?cheapest.icrActual.toFixed(2)+'\xd7':'\u2014')+
-    row('Monthly IO',      winner?fmtM(winner.monthlyIO)+'/mo':'\u2014', cheapest?fmtM(cheapest.monthlyIO)+'/mo':'\u2014')+
-    row('App Fee',         winner?fmtM(winner.appFee):'\u2014', cheapest?fmtM(cheapest.appFee):'\u2014')+
+    row('Monthly IO',      winner?fmtM(winner.monthlyIO):'\u2014', cheapest?fmtM(cheapest.monthlyIO):'\u2014')+
+    row('App Fee',         winner?fmtM(winner.appFee)+' <span style="color:#64748b;font-size:11px">('+winner.appPct.toFixed(2)+'%)</span>':'\u2014', cheapest?fmtM(cheapest.appFee)+' <span style="color:#64748b;font-size:11px">('+cheapest.appPct.toFixed(2)+'%)</span>':'\u2014')+
     '</tbody>';
 
   return '<table class="cmp-table">'+hdr+body+'</table>';
@@ -1190,7 +1189,7 @@ function p2BuildAllLendersRows() {
       '<td class="r">'+r.lvr.toFixed(1)+'%</td>'+
       '<td class="r">'+r.rate.toFixed(2)+'%</td><td class="r">'+r.assessRate.toFixed(2)+'%</td>'+
       '<td class="r">'+r.icrActual.toFixed(2)+'\xd7</td>'+
-      '<td class="r">'+fmtM(r.monthlyIO)+'/mo</td>'+
+      '<td class="r">'+fmtM(r.monthlyIO)+'</td>'+
       '<td class="r">'+(r.valWaive?'<span class="p2-waived">Waived</span>':fmtM(r.cc.val))+'</td>'+
       '</tr>';
   }).join('');
@@ -1225,12 +1224,15 @@ function p2RenderResults(run, funds, yieldPct, annualRent, lvrCap) {
 
   // Theoretical max bar
   html+='<div class="theor-bar">'+
-    '<div class="theor-label">Theoretical Ceiling — 70% LVR, equity only, no serviceability'+
-    '<div class="theor-sub">'+yieldDisp+(lvrCap>0?' &middot; LVR cap '+lvrCap+'%':'')+'</div></div>'+
+    '<div class="theor-label"><strong style="color:#fff;font-size:13px">Max Purchase Price</strong><div style="font-size:11px;color:#60a5fa;margin-top:3px">Assuming max 70% LVR achievable</div></div>'+
     '<div class="theor-value">'+fmtM(theoCap)+'</div></div>';
 
   // Compare table
-  html+='<div class="card"><div class="card-title">Best Options Comparison</div>'+p2RenderCompareTable(winner,cheapest)+'</div>';
+  html+='<div class="card">'+
+    '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>Loan Options Comparison</span>'+
+    '<button class="export-btn" style="width:auto;flex:none;padding:6px 14px;font-size:12px" onclick="p2CopyTable()">Copy Summary</button>'+
+    '</div>'+p2RenderCompareTable(winner,cheapest)+'</div>';
 
   // All Lenders table
   var alThead='<thead><tr>'+
@@ -1245,10 +1247,7 @@ function p2RenderResults(run, funds, yieldPct, annualRent, lvrCap) {
     '</tr></thead>';
 
   html+='<div class="card">'+
-    '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span>All Lenders</span>'+
-    '<button class="export-btn" style="width:auto;flex:none;padding:6px 14px;font-size:12px" onclick="p2CopyTable()">Copy Summary</button>'+
-    '</div>'+
+    '<div class="card-title">All Lenders</div>'+
     '<div style="overflow-x:auto"><table class="al-table">'+alThead+
     '<tbody id="p2AlTbody">'+p2BuildAllLendersRows()+'</tbody></table></div></div>';
 
@@ -1285,7 +1284,6 @@ function p2CopyTable() {
   lines.push('  Valuation\t'+(w?(w.valWaive?'Waived':fA(w.cc.val)):'\u2014')+(c?'\t'+(c.valWaive?'Waived':fA(c.cc.val)):''));
   lines.push('Rate (Actual)\t'+(w?fa(w.rate)+'%':'\u2014')+(c?'\t'+fa(c.rate)+'%':''));
   lines.push('Assessment Rate\t'+(w?fa(w.assessRate)+'%':'\u2014')+(c?'\t'+fa(c.assessRate)+'%':''));
-  lines.push('ICR Required\t'+(w?fa(w.icr):'\u2014')+(c?'\t'+fa(c.icr):''));
   lines.push('ICR Achieved\t'+(w?fa(w.icrActual):'\u2014')+(c?'\t'+fa(c.icrActual):''));
   lines.push('Monthly IO\t'+(w?fA(w.monthlyIO):'\u2014')+(c?'\t'+fA(c.monthlyIO):''));
   lines.push('App Fee\t'+(w?fA(w.appFee):'\u2014')+(c?'\t'+fA(c.appFee):''));
