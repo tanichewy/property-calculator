@@ -1,249 +1,232 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AU Investment Property Calculator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>AU Property Closing Costs — Phase 1</title>
 <style>
-/* ─── Reset ─────────────────────────────────────────────────── */
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+  .phase-banner{background:linear-gradient(135deg,#1e3a5f,#1e40af);border-bottom:2px solid #3b82f6;padding:12px 24px;font-size:12px;color:#93c5fd;text-align:center}
+  .phase-banner strong{color:#fff}
+  .phase-banner .sub{margin-top:4px;color:#7dd3fc;font-size:11px}
+  header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:28px 24px 20px;border-bottom:1px solid #1e3a5f}
+  header h1{font-size:22px;font-weight:700;color:#f8fafc}
+  header p{color:#64748b;font-size:13px;margin-top:4px}
+  .container{max-width:960px;margin:0 auto;padding:24px 16px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+  .card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:16px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .field input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:15px;padding:10px 14px;outline:none;transition:border-color .2s}
+  .field input:focus{border-color:#3b82f6}
+  .state-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+  @media(max-width:640px){.state-grid{grid-template-columns:repeat(4,1fr)}}
+  .state-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:10px 4px;cursor:pointer;text-align:center;transition:all .2s}
+  .state-btn:hover{border-color:#3b82f6;color:#3b82f6}
+  .state-btn.active{background:#1d4ed8;border-color:#3b82f6;color:#fff}
+  .divider{border:none;border-top:1px solid #334155;margin:16px 0}
+  .section-label{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .type-row{display:flex;gap:10px}
+  .type-btn{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:12px;cursor:pointer;text-align:center;transition:all .2s}
+  .type-btn:hover{border-color:#3b82f6;color:#3b82f6}
+  .type-btn.active-res{background:#1e3a8a;border-color:#3b82f6;color:#93c5fd}
+  .type-btn.active-com{background:#064e3b;border-color:#10b981;color:#6ee7b7}
+  .toggle-label{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+  .toggle-track{width:40px;height:22px;background:#334155;border-radius:11px;position:relative;flex-shrink:0;transition:background .2s;cursor:pointer}
+  .toggle-track.on{background:#1d4ed8}
+  .toggle-thumb{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;pointer-events:none}
+  .toggle-track.on .toggle-thumb{left:20px}
+  .field-hint{font-size:11px;color:#64748b;margin-top:5px;font-style:italic;min-height:14px}
+  /* Breakdown table */
+  .breakdown-table{width:100%;border-collapse:collapse;font-size:13px}
+  .breakdown-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:0 0 10px 0;border-bottom:1px solid #334155}
+  .breakdown-table th.r{text-align:right}
+  .breakdown-table td{padding:9px 0;border-bottom:0.5px solid #1e3a5f;vertical-align:middle;color:#94a3b8}
+  .breakdown-table td.amt{text-align:right;font-weight:600;color:#f1f5f9;white-space:nowrap}
+  .breakdown-table td.pct{text-align:right;color:#64748b;font-size:12px;width:52px}
+  .breakdown-table tr:last-child td{border-bottom:none}
+  .breakdown-table .item-cell{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+  .exempt-badge{font-size:10px;font-weight:700;background:#064e3b;color:#6ee7b7;border:1px solid #10b981;border-radius:4px;padding:2px 6px}
+  .est-tag{font-size:10px;color:#64748b;font-style:italic;font-weight:400}
+  .total-row{background:linear-gradient(135deg,#1d4ed8,#1e40af);border-radius:10px;padding:14px 18px;margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+  .total-label{font-size:12px;font-weight:700;color:#bfdbfe}
+  .total-value{font-size:19px;font-weight:800;color:#fff}
+  .total-qualifier{font-size:11px;color:#64748b;font-style:italic;margin-top:10px}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .stat-box{background:#0a1628;border-radius:8px;padding:12px 16px}
+  .stat-label{font-size:11px;color:#64748b;margin-bottom:4px}
+  .stat-value{font-size:15px;font-weight:700;color:#38bdf8}
+  .alert{border-radius:8px;padding:12px 16px;font-size:12px;margin-top:12px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+  .alert.info   {background:#1a2744;border:1px solid #2563eb;color:#93c5fd}
+  .alert.success{background:#052e16;border:1px solid #16a34a;color:#86efac}
+  .alert.warning{background:#1c1700;border:1px solid #d97706;color:#fcd34d}
+  .alert.neutral{background:#1e293b;border:1px solid #475569;color:#94a3b8}
+  .disclaimer{background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:16px;font-size:11px;color:#475569;line-height:1.6}
+  .disclaimer strong{color:#64748b}
+  .empty-state{text-align:center;padding:40px 20px;color:#475569}
+  .empty-state .icon{font-size:48px;margin-bottom:12px}
+  .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:8px;vertical-align:middle}
+  .badge-blue{background:#1d4ed8;color:#bfdbfe}
+  .badge-green{background:#064e3b;color:#6ee7b7}
+  .export-btns{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #1e3a5f}
+  .export-btn{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:10px 12px;cursor:pointer;text-align:center;transition:all .2s}
+  .export-btn:hover{border-color:#3b82f6;color:#3b82f6}
+  /* ── Funds to Complete card ─────────────────────────────────────── */
+  .ftc-card{background:#1e293b;border:1px solid #134e4a;border-radius:12px;padding:24px;margin-bottom:20px}
+  .ftc-card .card-title{color:#5eead4;margin-bottom:18px}
+  .ftc-rows{display:flex;flex-direction:column}
+  .ftc-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid #1e3a5f}
+  .ftc-row:last-child{border-bottom:none}
+  .ftc-label{font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ftc-op{font-size:15px;font-weight:700;color:#475569;width:20px;flex-shrink:0;text-align:center}
+  .ftc-amount{font-size:14px;font-weight:700;color:#f1f5f9;white-space:nowrap}
+  .ftc-row.subtotal .ftc-label{font-weight:600;color:#cbd5e1}
+  .ftc-row.subtotal .ftc-amount{color:#fff;font-size:15px}
+  .ftc-row.deduct .ftc-amount{color:#f87171}
+  .ftc-costs-row{cursor:pointer;border-radius:6px;transition:background .15s;margin:0 -8px;padding:11px 8px}
+  .ftc-costs-row:hover{background:rgba(99,102,241,0.07)}
+  .ftc-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .ftc-chevron{font-size:11px;color:#64748b;transition:transform .25s;display:inline-block;line-height:1}
+  .ftc-chev-closed{transform:rotate(-90deg)}
+  .ftc-drilldown{background:#0a1628;border:1px solid #1e3a5f;border-radius:8px;padding:16px;margin:4px 0 10px 0;overflow:hidden}
+  .ftc-dd-hidden{display:none}
+  .ftc-divider{border:none;border-top:1px dashed #334155;margin:6px 0}
+  .ftc-result{background:linear-gradient(135deg,#134e4a,#0f3d37);border:1px solid #0d9488;border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+  .ftc-result-label{font-size:13px;font-weight:700;color:#99f6e4}
+  .ftc-result-value{font-size:22px;font-weight:800;color:#fff}
+  .ftc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  @media(max-width:640px){.ftc-stats{grid-template-columns:1fr 1fr}}
+  .ftc-stat{background:#0f172a;border-radius:8px;padding:12px 16px}
+  .ftc-stat .stat-label{font-size:11px;color:#64748b;margin-bottom:4px}
+  .ftc-stat .stat-value{font-size:15px;font-weight:700;color:#2dd4bf}
+  .lvr-warn{color:#fbbf24 !important}
+  .ftc-lmi-row{padding:5px 0 5px 28px !important;border-bottom:0.5px solid #1e3a5f !important}
+  .ftc-lmi-row .ftc-label{color:#78716c;font-size:12px}
+  .ftc-lmi-row .ftc-amount{color:#fbbf24;font-size:12px;font-weight:600}
+  /* ── Tabs ──────────────────────────────────────────────── */
+  .tab-nav{display:flex;gap:0;margin-bottom:20px;background:#0f172a;border-radius:10px;padding:4px;border:1px solid #334155}
+  .tab-btn{flex:1;background:transparent;border:none;border-radius:8px;color:#64748b;font-size:13px;font-weight:600;padding:11px 16px;cursor:pointer;transition:all .2s;text-align:center}
+  .tab-btn:hover{color:#93c5fd}
+  .tab-btn.active{background:#1e293b;color:#f1f5f9;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  /* ── Asset type ─────────────────────────────────────────── */
+  .asset-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:4px}
+  @media(max-width:640px){.asset-grid{grid-template-columns:repeat(3,1fr)}}
+  .asset-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;font-weight:600;padding:9px 4px;cursor:pointer;text-align:center;transition:all .2s}
+  .asset-btn:hover{border-color:#10b981;color:#10b981}
+  .asset-btn.active{background:#064e3b;border-color:#10b981;color:#6ee7b7}
+  /* ── Assumptions panel ──────────────────────────────────── */
+  .assume-wrap{overflow-x:auto}
+  .assume-table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+  .assume-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:0 8px 10px 0;border-bottom:1px solid #334155}
+  .assume-table th.r{text-align:right}
+  .assume-table td{padding:8px 8px 8px 0;border-bottom:0.5px solid #1e3a5f;color:#94a3b8;vertical-align:middle}
+  .assume-table tr:last-child td{border-bottom:none}
+  .assume-inp{background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f1f5f9;font-size:12px;padding:5px 8px;width:68px;text-align:right;outline:none}
+  .assume-inp:focus{border-color:#3b82f6}
+  /* ── Theoretical max bar ────────────────────────────────── */
+  .theor-bar{background:linear-gradient(135deg,#1e3a5f,#1e40af);border:1px solid #2563eb;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .theor-label{font-size:12px;color:#93c5fd;flex:1}
+  .theor-sub{font-size:10px;color:#60a5fa;margin-top:3px}
+  .theor-value{font-size:20px;font-weight:800;color:#fff}
+  /* ── Compare table ──────────────────────────────────────── */
+  .cmp-table{width:100%;border-collapse:collapse;font-size:13px}
+  .cmp-table th{padding:8px 10px 12px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #334155;color:#64748b;text-align:left}
+  .cmp-table th.c-head{text-align:center;color:#93c5fd;padding:8px 10px 12px}
+  .cmp-table td.c-lbl{padding:10px 8px 10px 0;color:#94a3b8;font-size:13px;vertical-align:middle}
+  .cmp-table td.c-lbl-click{cursor:pointer}
+  .cmp-table td.c-lbl-click:hover{color:#bfdbfe}
+  .cmp-table td.c-val{padding:10px;text-align:center;font-weight:600;color:#f1f5f9;font-size:13px;white-space:nowrap;vertical-align:middle}
+  .cmp-table td.c-sub{padding:3px 10px;text-align:center;font-size:12px;color:#94a3b8;vertical-align:middle;white-space:nowrap}
+  .cmp-table tbody tr{border-bottom:0.5px solid #1e3a5f}
+  .cmp-table tbody tr:last-child{border-bottom:none}
+  .cmp-lname{font-size:12px;font-weight:700;color:#bfdbfe;display:block;margin-top:5px;text-transform:none;letter-spacing:0}
+  /* ── All Lenders table ──────────────────────────────────── */
+  .al-table{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+  .al-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:0 6px 10px 0;border-bottom:1px solid #334155;white-space:nowrap}
+  .al-table th.r{text-align:right;cursor:pointer;user-select:none}
+  .al-table th.r:hover{color:#93c5fd}
+  .al-table td{padding:9px 6px 9px 0;border-bottom:0.5px solid #1e3a5f;color:#94a3b8;vertical-align:middle}
+  .al-table td.r{text-align:right;color:#f1f5f9;font-weight:600;white-space:nowrap}
+  .al-table tr:last-child td{border-bottom:none}
+  .sort-active{color:#93c5fd !important}
+  .sort-arrow{font-size:10px;color:#64748b}
+  .p2-row-infeasible td{opacity:.55}
+  .p2-row-excluded td{opacity:.4;font-style:italic}
+  .p2-waived{font-size:10px;background:#052e16;color:#86efac;border:1px solid #16a34a;border-radius:4px;padding:2px 5px;font-weight:700}
+  .p2-excl-tag{font-size:10px;background:#1c1700;color:#fcd34d;border:1px solid #d97706;border-radius:4px;padding:2px 5px;font-weight:700;margin-left:4px}
+  .p2-badge{font-size:12px;margin-left:3px}
 
-/* ─── Phase Banner ──────────────────────────────────────────── */
-.phase-banner{background:linear-gradient(135deg,#1e3a5f,#1e40af);border-bottom:2px solid #3b82f6;padding:12px 24px;font-size:12px;color:#93c5fd;text-align:center}
-.phase-banner strong{color:#fff}
-.phase-banner .sub{margin-top:4px;color:#7dd3fc;font-size:11px}
-
-/* ─── Header ────────────────────────────────────────────────── */
-header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:28px 24px 20px;border-bottom:1px solid #1e3a5f}
-header h1{font-size:22px;font-weight:700;color:#f8fafc}
-header p{color:#64748b;font-size:13px;margin-top:4px}
-
-/* ─── Layout ────────────────────────────────────────────────── */
-.container{max-width:960px;margin:0 auto;padding:24px 16px}
-
-/* ─── Cards ─────────────────────────────────────────────────── */
-.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
-.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:16px}
-
-/* ─── Grids ─────────────────────────────────────────────────── */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
-
-/* ─── Fields ────────────────────────────────────────────────── */
-.field label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.field input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:15px;padding:10px 14px;outline:none;transition:border-color .2s}
-.field input:focus{border-color:#3b82f6}
-.field-hint{font-size:11px;color:#64748b;margin-top:5px;font-style:italic;min-height:14px}
-
-/* ─── State buttons ─────────────────────────────────────────── */
-.state-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
-@media(max-width:640px){.state-grid{grid-template-columns:repeat(4,1fr)}}
-.state-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:10px 4px;cursor:pointer;text-align:center;transition:all .2s}
-.state-btn:hover{border-color:#3b82f6;color:#3b82f6}
-.state-btn.active{background:#1d4ed8;border-color:#3b82f6;color:#fff}
-
-/* ─── Dividers ──────────────────────────────────────────────── */
-.divider{border:none;border-top:1px solid #334155;margin:16px 0}
-.section-label{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-
-/* ─── Type buttons ──────────────────────────────────────────── */
-.type-row{display:flex;gap:10px}
-.type-btn{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:12px;cursor:pointer;text-align:center;transition:all .2s}
-.type-btn:hover{border-color:#3b82f6;color:#3b82f6}
-.type-btn.active-res{background:#1e3a8a;border-color:#3b82f6;color:#93c5fd}
-.type-btn.active-com{background:#064e3b;border-color:#10b981;color:#6ee7b7}
-
-/* ─── Toggles ───────────────────────────────────────────────── */
-.toggle-label{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
-.toggle-track{width:40px;height:22px;background:#334155;border-radius:11px;position:relative;flex-shrink:0;transition:background .2s;cursor:pointer}
-.toggle-track.on{background:#1d4ed8}
-.toggle-track.on-green{background:#059669}
-.toggle-thumb{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;pointer-events:none}
-.toggle-track.on .toggle-thumb,.toggle-track.on-green .toggle-thumb{left:20px}
-
-/* ─── Tab bar ───────────────────────────────────────────────── */
-.tab-bar{display:flex;gap:0;border-bottom:2px solid #334155;margin-bottom:24px}
-.tab-btn{background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:12px 22px;font-size:14px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;white-space:nowrap}
-.tab-btn:hover{color:#94a3b8}
-.tab-btn.active{color:#e2e8f0;border-bottom-color:#3b82f6}
-
-/* ─── Phase 1: breakdown table ──────────────────────────────── */
-.breakdown-table{width:100%;border-collapse:collapse;font-size:13px}
-.breakdown-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:0 0 10px 0;border-bottom:1px solid #334155}
-.breakdown-table th.r{text-align:right}
-.breakdown-table td{padding:10px 0;border-bottom:0.5px solid #1e3a5f;vertical-align:middle;color:#94a3b8}
-.breakdown-table td.amt{text-align:right;font-weight:600;color:#f1f5f9;white-space:nowrap}
-.breakdown-table td.pct{text-align:right;color:#64748b;font-size:12px;width:52px}
-.breakdown-table tr:last-child td{border-bottom:none}
-.breakdown-table .item-cell{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
-.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:640px){.results-grid{grid-template-columns:1fr}}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
-.exempt-badge{font-size:10px;font-weight:700;background:#064e3b;color:#6ee7b7;border:1px solid #10b981;border-radius:4px;padding:2px 6px}
-.est-tag{font-size:10px;color:#64748b;font-style:italic;font-weight:400}
-.total-row{background:linear-gradient(135deg,#1d4ed8,#1e40af);border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
-.total-label{font-size:13px;font-weight:700;color:#bfdbfe}
-.total-value{font-size:22px;font-weight:800;color:#fff}
-.total-qualifier{font-size:11px;color:#64748b;font-style:italic;margin-top:8px}
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.stat-box{background:#0f172a;border-radius:8px;padding:12px 16px}
-.stat-label{font-size:11px;color:#64748b;margin-bottom:4px}
-.stat-value{font-size:16px;font-weight:700;color:#38bdf8}
-.chart-wrap{position:relative;height:240px;display:flex;align-items:center;justify-content:center}
-.chart-empty{color:#475569;text-align:center;font-size:13px;padding:20px}
-
-/* ─── Alerts ────────────────────────────────────────────────── */
-.alert{border-radius:8px;padding:12px 16px;font-size:12px;margin-top:12px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
-.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
-.alert.info{background:#1a2744;border:1px solid #2563eb;color:#93c5fd}
-.alert.success{background:#052e16;border:1px solid #16a34a;color:#86efac}
-.alert.warning{background:#1c1700;border:1px solid #d97706;color:#fcd34d}
-.alert.neutral{background:#1e293b;border:1px solid #475569;color:#94a3b8}
-
-/* ─── Badges ────────────────────────────────────────────────── */
-.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:8px;vertical-align:middle}
-.badge-blue{background:#1d4ed8;color:#bfdbfe}
-.badge-green{background:#064e3b;color:#6ee7b7}
-
-/* ─── Disclaimer ─────────────────────────────────────────────── */
-.disclaimer{background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:16px;font-size:11px;color:#475569;line-height:1.6}
-.disclaimer strong{color:#64748b}
-
-/* ─── Empty state ───────────────────────────────────────────── */
-.empty-state{text-align:center;padding:40px 20px;color:#475569}
-.empty-state .icon{font-size:48px;margin-bottom:12px}
-
-/* ─── Export ────────────────────────────────────────────────── */
-.export-btns{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #1e3a5f}
-.export-btn{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:13px;font-weight:600;padding:10px 12px;cursor:pointer;text-align:center;transition:all .2s}
-.export-btn:hover{border-color:#3b82f6;color:#3b82f6}
-
-/* ─── Phase 2: Asset buttons ────────────────────────────────── */
-.asset-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-@media(max-width:640px){.asset-grid{grid-template-columns:repeat(3,1fr)}}
-.asset-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;font-weight:600;padding:10px 4px;cursor:pointer;text-align:center;transition:all .2s}
-.asset-btn:hover{border-color:#10b981;color:#10b981}
-.asset-btn.active{background:#064e3b;border-color:#10b981;color:#6ee7b7}
-
-/* ─── Phase 2: Assumptions table ────────────────────────────── */
-.assumptions-wrap{overflow-x:auto}
-.assumptions-table{width:100%;border-collapse:collapse;font-size:12px;min-width:580px}
-.assumptions-table th{text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:8px 6px;border-bottom:1px solid #334155}
-.assumptions-table th:first-child{text-align:left}
-.assumptions-table td{padding:5px 4px;border-bottom:0.5px solid #1e3a5f;vertical-align:middle;text-align:center}
-.assumptions-table td:first-child{text-align:left}
-.assumptions-table tr:last-child td{border-bottom:none}
-.assumptions-table input[type=number]{width:62px;background:#0f172a;border:1px solid #1e3a5f;border-radius:4px;color:#f1f5f9;font-size:12px;padding:4px 6px;outline:none;text-align:right;-moz-appearance:textfield}
-.assumptions-table input[type=number]:focus{border-color:#3b82f6}
-.assumptions-table input[type=number]::-webkit-outer-spin-button,
-.assumptions-table input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.lender-name{font-size:12px;font-weight:600;color:#94a3b8;white-space:nowrap;padding-right:8px}
-.lender-excluded .lender-name{color:#334155}
-.lender-excluded input{opacity:.3;pointer-events:none}
-.lender-excluded .assumptions-check{opacity:.3}
-.excl-badge{font-size:10px;font-weight:700;background:#1e293b;color:#475569;border:1px solid #334155;border-radius:4px;padding:1px 5px;margin-left:6px}
-.assumptions-check{width:16px;height:16px;accent-color:#10b981;cursor:pointer}
-.assump-note{font-size:11px;color:#64748b;font-style:italic;margin-top:10px}
-
-/* ─── Phase 2: Collapsible ──────────────────────────────────── */
-.collapsible-hdr{cursor:pointer;display:flex;align-items:center;gap:8px;user-select:none;padding-bottom:0}
-.collapsible-hdr.open{margin-bottom:16px}
-.collapsible-arrow{transition:transform .2s;display:inline-block;font-size:11px;color:#64748b}
-.collapsible-arrow.open{transform:rotate(90deg)}
-
-/* ─── Phase 2: Comparison table ─────────────────────────────── */
-.compare-wrap{overflow-x:auto}
-.compare-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:460px;table-layout:fixed}
-.compare-table col.c-label{width:26%}
-.compare-table col.c-data{width:37%}
-.compare-table thead tr th{padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;vertical-align:top}
-.compare-table thead tr th:first-child{background:transparent;border:none;color:#64748b}
-.compare-table thead tr th.col-win{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);border-radius:8px 8px 0 0;color:#60a5fa}
-.compare-table thead tr th.col-cheap{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:8px 8px 0 0;color:#34d399}
-.compare-table tbody tr td{padding:10px 16px;border-bottom:0.5px solid #1e3a5f;font-size:13px;color:#94a3b8;vertical-align:middle}
-.compare-table tbody tr td:first-child{font-size:12px;font-weight:500}
-.compare-table tbody tr td.val{text-align:right;font-weight:600;color:#f1f5f9}
-.compare-table tbody tr td.col-win{text-align:right;font-weight:700;background:rgba(59,130,246,0.05);border-left:1px solid rgba(59,130,246,0.2);border-right:1px solid rgba(59,130,246,0.2);color:#93c5fd}
-.compare-table tbody tr td.col-cheap{text-align:right;font-weight:700;background:rgba(16,185,129,0.05);border-left:1px solid rgba(16,185,129,0.2);border-right:1px solid rgba(16,185,129,0.2);color:#6ee7b7}
-.compare-table tbody tr td.col-win .hero{font-size:20px;font-weight:800;color:#60a5fa;display:block}
-.compare-table tbody tr td.col-cheap .hero{font-size:20px;font-weight:800;color:#34d399;display:block}
-.compare-table .divider-row td{padding:3px 0;background:transparent;border-top:1px solid #334155;border-bottom:1px solid #334155}
-.compare-table tbody tr:last-child td{border-bottom:none}
-.constraint-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px}
-.c-lvr{background:#1a2744;color:#60a5fa;border:1px solid #3b82f6}
-.c-icr{background:#1c1700;color:#fcd34d;border:1px solid #d97706}
-
-/* ─── Phase 2: All lenders summary ──────────────────────────── */
-.all-lenders-table{width:100%;border-collapse:collapse;font-size:12px}
-.all-lenders-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155}
-.all-lenders-table th.r{text-align:right}
-.all-lenders-table th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
-.all-lenders-table th.sortable:hover{color:#e2e8f0}
-.all-lenders-table th .sort-arrow{margin-left:4px;opacity:0.4;font-size:10px}
-.all-lenders-table th.sort-active .sort-arrow{opacity:1;color:#38bdf8}
-.theor-max-bar{background:linear-gradient(135deg,#0f2744,#1a3a5c);border:1px solid #2563eb;border-radius:8px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.theor-max-label{font-size:11px;font-weight:600;color:#60a5fa;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
-.theor-max-value{font-size:18px;font-weight:800;color:#fff}
-.theor-max-note{font-size:11px;color:#64748b;font-style:italic;margin-left:auto}
-.all-lenders-table td{padding:9px 8px;border-bottom:0.5px solid #1e3a5f;font-size:12px;color:#94a3b8;vertical-align:middle}
-.all-lenders-table td.r{text-align:right;font-weight:600;color:#f1f5f9}
-.all-lenders-table td.nm{font-weight:600;color:#cbd5e1}
-.all-lenders-table tr.row-win td{background:rgba(59,130,246,0.07)}
-.all-lenders-table tr.row-cheap td{background:rgba(16,185,129,0.07)}
-.all-lenders-table tr.row-excluded td{opacity:.38}
-.all-lenders-table tr:last-child td{border-bottom:none}
-
-/* ─── Residential note ──────────────────────────────────────── */
-.resi-note{text-align:center;padding:56px 20px}
-.resi-note .icon{font-size:52px;margin-bottom:16px}
-.resi-note h3{font-size:16px;font-weight:700;color:#94a3b8;margin-bottom:8px}
-.resi-note p{font-size:13px;color:#64748b;line-height:1.6;max-width:400px;margin:0 auto}
-
-/* ─── Print ─────────────────────────────────────────────────── */
-@media print {
-  .no-print,.phase-banner,.export-btns,.tab-bar{display:none !important}
-  body{background:#fff !important;color:#000 !important}
-  header{background:#fff !important;border-bottom:1px solid #ddd !important;padding:16px !important}
-  header h1{color:#000 !important;font-size:18px !important}
-  header p{color:#555 !important}
-  .container{padding:12px 0 !important}
-  .card{background:#fff !important;border:1px solid #ccc !important;border-radius:4px !important;margin-bottom:12px !important;break-inside:avoid}
-  .card-title{color:#555 !important;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px}
-  .breakdown-table th{color:#555 !important;border-bottom-color:#ccc !important}
-  .breakdown-table td{color:#333 !important;border-bottom-color:#eee !important}
-  .breakdown-table td.amt{color:#000 !important}
-  .total-row{background:#1d4ed8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:6px !important}
-  .total-label,.total-value{color:#fff !important}
-  .stat-box{background:#f5f5f5 !important;border:1px solid #ddd !important}
-  .stat-value{color:#1565c0 !important}
-  .alert.info{background:#e3f2fd !important;border-color:#1565c0 !important;color:#0d47a1 !important}
-  .alert.success{background:#e8f5e9 !important;border-color:#2e7d32 !important;color:#1b5e20 !important}
-  .alert.warning{background:#fff8e1 !important;border-color:#f57f17 !important;color:#e65100 !important}
-  .results-grid{grid-template-columns:1fr 1fr !important}
-}
+  @media print {
+    .no-print,.phase-banner,.export-btns,.tab-nav,#tabPanel2{display:none !important}
+    #tabPanel1{display:block !important}
+    body{background:#fff !important;color:#000 !important}
+    header{background:#fff !important;border-bottom:1px solid #ddd !important;padding:16px !important}
+    header h1{color:#000 !important;font-size:18px !important}
+    header p{color:#555 !important}
+    .container{padding:12px 0 !important}
+    .card{background:#fff !important;border:1px solid #ccc !important;border-radius:4px !important;margin-bottom:12px !important;break-inside:avoid}
+    .ftc-card{background:#fff !important;border:1px solid #ccc !important;border-radius:4px !important;margin-bottom:12px !important;break-inside:auto}
+    .card-title{color:#555 !important;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px}
+    .ftc-card .card-title{color:#0f766e !important}
+    .breakdown-table th{color:#555 !important;border-bottom-color:#ccc !important}
+    .breakdown-table td{color:#333 !important;border-bottom-color:#eee !important}
+    .breakdown-table td.amt{color:#000 !important}
+    .breakdown-table td.pct{color:#666 !important}
+    .est-tag{color:#888 !important}
+    .total-row{background:#1d4ed8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:4px !important}
+    .total-label,.total-value{color:#fff !important}
+    .total-qualifier{color:#888 !important}
+    .stat-box,.ftc-stat{background:#f5f5f5 !important;border:1px solid #ddd !important;border-radius:4px !important}
+    .stat-label{color:#555 !important}
+    .stat-value{color:#1565c0 !important}
+    .ftc-stat .stat-value{color:#0f766e !important}
+    .alert.info{background:#e3f2fd !important;border-color:#1565c0 !important;color:#0d47a1 !important}
+    .alert.success{background:#e8f5e9 !important;border-color:#2e7d32 !important;color:#1b5e20 !important}
+    .alert.warning{background:#fff8e1 !important;border-color:#f57f17 !important;color:#e65100 !important}
+    .alert.neutral{background:#f5f5f5 !important;border-color:#9e9e9e !important;color:#424242 !important}
+    .exempt-badge{background:#e8f5e9 !important;color:#2e7d32 !important;border-color:#4caf50 !important}
+    .disclaimer{background:#f9f9f9 !important;border-color:#ddd !important;color:#555 !important}
+    .disclaimer strong{color:#333 !important}
+    .ftc-row{border-bottom-color:#eee !important}
+    .ftc-label{color:#444 !important}
+    .ftc-op{color:#888 !important}
+    .ftc-amount{color:#000 !important}
+    .ftc-row.subtotal .ftc-amount{color:#000 !important}
+    .ftc-row.deduct .ftc-amount{color:#b91c1c !important}
+    .ftc-divider{border-top-color:#ccc !important}
+    .ftc-result{background:#0f766e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:4px !important}
+    .ftc-result-label,.ftc-result-value{color:#fff !important}
+    .ftc-drilldown,.ftc-drilldown.ftc-dd-hidden{display:block !important}
+    .ftc-drilldown{background:#f9f9f9 !important;border-color:#ddd !important}
+    .ftc-chevron{display:none !important}
+    .ftc-costs-row{cursor:default !important}
+  }
 </style>
 </head>
 <body>
 
 <div class="phase-banner">
-  <strong>PHASE 1 — CLOSING COSTS</strong> &nbsp;|&nbsp; Stamp Duty · Registration · Conveyancing · Valuation &nbsp;&nbsp;&nbsp;
-  <strong>PHASE 2 — AFFORDABILITY</strong> &nbsp;|&nbsp; Max Borrowing · Lender Comparison · IO Serviceability
-  <div class="sub">5 lenders · 7 policy rows · BOQ · CBA · NAB · Macquarie · Westpac &nbsp;|&nbsp; Commercial reverse calculator · 2026 rates</div>
+  <strong>PHASE 1 — CLOSING COSTS</strong> &nbsp;|&nbsp; Stamp Duty + Registration + Conveyancing + Valuation
+  &nbsp;&nbsp;&#183;&nbsp;&nbsp;
+  <strong>PHASE 2 — MAX LOAN</strong> &nbsp;|&nbsp; Commercial Serviceability Across 7 Lenders
 </div>
 
 <header>
   <div class="container" style="padding:0 16px">
-    <h1>&#127968; AU Investment Property <span id="typeBadge" class="badge badge-blue">INVESTOR</span></h1>
-    <p>Closing costs + commercial affordability — all states &amp; territories, 2026 rates</p>
+    <h1>&#127968; Australian Property Calculator <span id="typeBadge" class="badge badge-blue">INVESTOR</span></h1>
+    <p>Closing costs &amp; maximum borrowing &mdash; 2026 rates, all states &amp; territories</p>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- ── SHARED CONTROLS ─────────────────────────────────────── -->
-  <div class="card no-print" id="sharedControls">
+  <!-- SHARED CONTROLS — both tabs react via calcAll() -->
+  <div class="card no-print">
     <div class="card-title">1. Property Configuration</div>
     <div class="state-grid" id="stateGrid"></div>
     <hr class="divider">
@@ -254,232 +237,190 @@ header p{color:#64748b;font-size:13px;margin-top:4px}
     </div>
   </div>
 
-  <!-- ── TAB BAR ─────────────────────────────────────────────── -->
-  <div class="tab-bar no-print">
-    <button class="tab-btn active" id="tab1btn" onclick="switchTab(1)">📋 Cost Calculator</button>
-    <button class="tab-btn" id="tab2btn" onclick="switchTab(2)">💰 Max Loan Calculator</button>
+  <!-- TAB NAV -->
+  <div class="tab-nav no-print">
+    <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">&#128202; Closing Costs</button>
+    <button class="tab-btn" id="tabBtn2" onclick="switchTab(2)">&#127970; Max Loan (Commercial)</button>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       TAB 1 — PHASE 1: CLOSING COSTS
-  ═══════════════════════════════════════════════════════════ -->
-  <div id="tab1Panel">
+  <!-- ═══ TAB 1 — PHASE 1 ═══ -->
+  <div id="tabPanel1">
 
-    <div class="card no-print">
-      <div class="card-title">2. Property Details</div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Property Purchase Price</label>
-          <input type="text" id="price" placeholder="e.g. 600,000" inputmode="numeric">
-        </div>
-        <div class="field">
-          <label>Loan Amount <span style="color:#475569;font-weight:400">— edit to override</span></label>
-          <input type="text" id="loan" inputmode="numeric" placeholder="Auto: 80% LVR">
-          <div class="field-hint" id="loanHint"></div>
-        </div>
+  <div class="card no-print">
+    <div class="card-title">2. Property Details</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Property Purchase Price</label>
+        <input type="text" id="price" placeholder="e.g. 600,000" inputmode="numeric">
       </div>
-
-      <hr class="divider">
-
-      <div class="grid-2">
-        <div class="field">
-          <label>Conveyancing / Legal Fees <span style="color:#475569;font-weight:400">— edit to override</span></label>
-          <input type="text" id="convAmount" inputmode="numeric" placeholder="Auto-calculated">
-          <div class="field-hint" id="convHint"></div>
-        </div>
-        <div class="field">
-          <label>Valuation Fee <span style="color:#475569;font-weight:400">— edit to override</span></label>
-          <input type="text" id="valAmount" inputmode="numeric" placeholder="Auto-calculated">
-        </div>
-      </div>
-
-      <hr class="divider">
-
-      <div style="display:flex;align-items:center;gap:12px">
-        <label class="toggle-label" onclick="toggleBA()">
-          <span class="toggle-track" id="baTrack"><span class="toggle-thumb"></span></span>
-          <span style="font-size:13px;font-weight:600;color:#94a3b8">Include Buyers Agency Fee</span>
-        </label>
-      </div>
-      <div id="baAmountRow" style="display:none;margin-top:14px">
-        <div class="field">
-          <label>Buyers Agency Fee (inc. GST) <span style="color:#475569;font-weight:400">— edit to override</span></label>
-          <input type="text" id="baAmount" inputmode="numeric" placeholder="Auto-calculated">
-          <div class="field-hint" id="baHint"></div>
-        </div>
-      </div>
-
-      <hr class="divider">
-
-      <div style="display:flex;align-items:center;gap:12px">
-        <label class="toggle-label" onclick="toggleBuffer()">
-          <span class="toggle-track" id="bufTrack"><span class="toggle-thumb"></span></span>
-          <span style="font-size:13px;font-weight:600;color:#94a3b8">Include Contingency Buffer</span>
-        </label>
-      </div>
-      <div id="bufAmountRow" style="display:none;margin-top:14px">
-        <div class="field">
-          <label>Contingency Buffer <span style="color:#475569;font-weight:400">— edit to override</span></label>
-          <input type="text" id="bufAmount" inputmode="numeric" placeholder="Auto: 5% of purchase price">
-          <div class="field-hint" id="bufHint"></div>
-        </div>
+      <div class="field">
+        <label id="loanLabel">Base Loan Amount (excl. LMI) <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <input type="text" id="loan" inputmode="numeric" placeholder="Auto: 80% LVR">
+        <div class="field-hint" id="loanHint"></div>
       </div>
     </div>
 
-    <div id="p1ResultsSection">
-      <div class="card empty-state">
-        <div class="icon">&#129518;</div>
-        <p>Select a state, choose property type, and enter a purchase price</p>
+    <hr class="divider">
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Conveyancing / Legal Fees <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <input type="text" id="convAmount" inputmode="numeric" placeholder="Auto-calculated">
+        <div class="field-hint" id="convHint"></div>
+      </div>
+      <div class="field">
+        <label>Valuation Fee <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <input type="text" id="valAmount" inputmode="numeric" placeholder="Auto-calculated">
       </div>
     </div>
 
-  </div><!-- /tab1Panel -->
+    <hr class="divider">
 
-  <!-- ═══════════════════════════════════════════════════════════
-       TAB 2 — PHASE 2: AFFORDABILITY CALCULATOR
-  ═══════════════════════════════════════════════════════════ -->
-  <div id="tab2Panel" style="display:none">
-
-    <!-- Residential lock-out -->
-    <div id="p2ResiNote" style="display:none">
-      <div class="card resi-note">
-        <div class="icon">🏢</div>
-        <h3>Commercial Properties Only</h3>
-        <p>The Max Loan Calculator analyses commercial property lending against 5 institutional lenders. Switch to <strong>Commercial</strong> above to use this tool.</p>
+    <div style="display:flex;align-items:center;gap:12px">
+      <label class="toggle-label" onclick="toggleBA()">
+        <span class="toggle-track" id="baTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Include Buyers Agency Fee</span>
+      </label>
+    </div>
+    <div id="baAmountRow" style="display:none;margin-top:14px">
+      <div class="field">
+        <label>Buyers Agency Fee (inc. GST) <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <input type="text" id="baAmount" inputmode="numeric" placeholder="Auto-calculated">
+        <div class="field-hint" id="baHint"></div>
       </div>
     </div>
 
-    <!-- Commercial inputs -->
-    <div id="p2CommercialInputs" style="display:none">
+    <hr class="divider">
 
-      <div class="card no-print">
-        <div class="card-title">2. Max Loan Inputs</div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label>Available Funds (Total Capital)</label>
-            <input type="text" id="p2Funds" placeholder="e.g. 500,000" inputmode="numeric">
-            <div class="field-hint">Deposit + closing costs all come from this pool</div>
-          </div>
-          <div class="field" id="p2YieldField">
-            <label id="p2YieldLabel">Net Yield %</label>
-            <input type="text" id="p2Yield" placeholder="e.g. 6.50" inputmode="decimal">
-            <div class="field-hint" id="p2YieldHint">Annual net rent ÷ purchase price × 100</div>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-          <label class="toggle-label" onclick="toggleRentOverride()">
-            <span class="toggle-track" id="p2RentTrack"><span class="toggle-thumb"></span></span>
-            <span style="font-size:13px;font-weight:600;color:#94a3b8">Use actual annual rent instead of yield %</span>
-          </label>
-        </div>
-        <div id="p2RentRow" style="display:none;margin-top:14px">
-          <div class="field">
-            <label>Actual Annual Net Rent</label>
-            <input type="text" id="p2Rent" placeholder="e.g. 65,000" inputmode="numeric">
-            <div class="field-hint">Used directly for ICR serviceability — yield % overridden</div>
-          </div>
-        </div>
-
-        <hr class="divider">
-
-        <div class="section-label">Asset Type</div>
-        <div class="asset-grid" id="assetGrid"></div>
-
-        <hr class="divider">
-
-        <div style="display:flex;gap:32px;flex-wrap:wrap">
-          <label class="toggle-label" onclick="toggleWale()">
-            <span class="toggle-track" id="p2WaleTrack"><span class="toggle-thumb"></span></span>
-            <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE &lt; 2 years</span>
-          </label>
-          <label class="toggle-label" onclick="toggleDevLB()">
-            <span class="toggle-track" id="p2DevLBTrack"><span class="toggle-thumb"></span></span>
-            <span style="font-size:13px;font-weight:600;color:#94a3b8">Developer Leaseback</span>
-          </label>
-        </div>
-
-        <hr class="divider">
-
-        <div class="field" style="max-width:280px">
-          <label>LVR Cap Override <span style="color:#475569;font-weight:400">— optional</span></label>
-          <input type="text" id="p2LVRCap" placeholder="e.g. 65 (leave blank for lender max)" inputmode="numeric">
-          <div class="field-hint">Applied as a ceiling across all lenders</div>
-        </div>
-
+    <div style="display:flex;align-items:center;gap:12px">
+      <label class="toggle-label" onclick="toggleBuffer()">
+        <span class="toggle-track" id="bufTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Include Contingency Buffer</span>
+      </label>
+    </div>
+    <div id="bufAmountRow" style="display:none;margin-top:14px">
+      <div class="field">
+        <label>Contingency Buffer <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <input type="text" id="bufAmount" inputmode="numeric" placeholder="Auto: 5% of purchase price">
+        <div class="field-hint" id="bufHint"></div>
       </div>
+    </div>
+  </div>
 
-      <!-- Lender Assumptions -->
-      <div class="card no-print" id="p2AssumptionsCard">
-        <div class="collapsible-hdr" id="p2AssumpHdr" onclick="toggleAssumptions()">
-          <span class="collapsible-arrow" id="p2AssumpArrow">▶</span>
-          <span class="card-title" style="margin-bottom:0">Lender Assumptions</span>
-          <span style="font-size:11px;color:#475569;margin-left:8px;font-style:italic;font-weight:400">click to expand</span>
-        </div>
-        <div id="p2AssumptionsBody" style="display:none">
-          <p class="assump-note" style="margin-bottom:12px">Enter the actual lending rate for each lender. BOQ WALE &lt;2yr premium (+0.60%) is applied automatically when that flag is active.</p>
-          <div class="assumptions-wrap">
-            <table class="assumptions-table" id="p2AssumTable">
-              <thead>
-                <tr>
-                  <th>Lender / Policy</th>
-                  <th>Rate %<br><span style="text-transform:none;font-weight:400;font-style:italic">at max LVR</span></th>
-                  <th>Buffer %</th>
-                  <th>ICR ×</th>
-                  <th>App Fee %</th>
-                  <th>Max LVR %</th>
-                  <th>Val Waive</th>
-                </tr>
-              </thead>
-              <tbody id="p2AssumTbody"></tbody>
-            </table>
-          </div>
-          <p class="assump-note">Changes take effect immediately. Val Waive removes valuation fee from closing costs for that lender.</p>
-        </div>
+  <div id="resultsSection">
+    <div class="card empty-state">
+      <div class="icon">&#129518;</div>
+      <p>Select a state, choose property type, and enter a purchase price</p>
+    </div>
+  </div>
+
+  </div><!-- /tabPanel1 -->
+
+  <!-- ═══ TAB 2 — PHASE 2 ═══ -->
+  <div id="tabPanel2" style="display:none">
+
+  <div class="card no-print">
+    <div class="card-title">2. Available Funds &amp; Yield</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Available Funds (Total Capital)</label>
+        <input type="text" id="p2funds" inputmode="numeric" placeholder="e.g. 400,000">
+        <div class="field-hint">Deposit + all closing costs come from this pool</div>
       </div>
-
-      <!-- Results -->
-      <div id="p2ResultsSection">
-        <div class="card empty-state">
-          <div class="icon">💰</div>
-          <p>Enter available funds, yield and asset type to calculate maximum borrowing</p>
+      <div class="field">
+        <div id="p2yieldWrap">
+          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span></label>
+          <input type="text" id="p2yield" placeholder="e.g. 6.50" inputmode="decimal">
         </div>
+        <div id="p2rentWrap" style="display:none">
+          <label>Annual Net Rent ($) <span style="color:#475569;font-weight:400">— toggle below for % yield</span></label>
+          <input type="text" id="p2rent" inputmode="numeric" placeholder="e.g. 65,000">
+        </div>
+        <div class="field-hint" id="p2yieldHint">Annual net rent as % of purchase price</div>
       </div>
+    </div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+      <label class="toggle-label" onclick="toggleYieldMode()">
+        <span class="toggle-track" id="p2ymTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Enter as annual net rent ($) instead</span>
+      </label>
+    </div>
+    <hr class="divider">
+    <div class="field" style="max-width:280px">
+      <label>Global LVR Cap Override <span style="color:#475569;font-weight:400">— optional</span></label>
+      <input type="text" id="p2lvrcap" placeholder="e.g. 65 — leave blank for lender max" inputmode="decimal">
+      <div class="field-hint">Applies as ceiling across all lenders</div>
+    </div>
+  </div>
 
-    </div><!-- /p2CommercialInputs -->
+  <div class="card no-print">
+    <div class="card-title">3. Asset Type &amp; Policy</div>
+    <div class="section-label">Asset Type</div>
+    <div class="asset-grid" id="assetGrid"></div>
+    <hr class="divider">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <label class="toggle-label" onclick="toggleWale()">
+        <span class="toggle-track" id="p2waleTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE &lt; 2 Years &nbsp;<span class="est-tag">BOQ +0.60% rate penalty &middot; Westpac excluded</span></span>
+      </label>
+      <label class="toggle-label" onclick="toggleDevLeaseback()">
+        <span class="toggle-track" id="p2dlTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Developer Leaseback &nbsp;<span class="est-tag">BOQ Leasedoc excluded &middot; CBA val waiver removed</span></span>
+      </label>
+    </div>
+  </div>
 
-  </div><!-- /tab2Panel -->
+  <div class="card no-print">
+    <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:0" onclick="toggleAssume()">
+      <span>Lender Assumptions &nbsp;<span class="est-tag">edit to override defaults</span></span>
+      <span id="assumeChev" class="ftc-chevron ftc-chev-closed">&#9660;</span>
+    </div>
+    <div id="assumePanel" style="display:none;margin-top:16px">
+      <div class="assume-wrap" id="assumeTableWrap"></div>
+    </div>
+  </div>
 
-</div><!-- /container -->
+  <div id="p2ResultsSection">
+    <div class="card empty-state">
+      <div class="icon">&#127970;</div>
+      <p>Select a state, switch to Commercial, enter available funds and yield</p>
+    </div>
+  </div>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 1 — SHARED GLOBALS
-═══════════════════════════════════════════════════════════════ -->
+  </div><!-- /tabPanel2 -->
+
+</div>
+
+<!-- ============================================================
+     MODULE 1 — STATE & GLOBALS
+     All shared state variables used across modules
+     ============================================================ -->
 <script>
-var selectedState = null;
-var propType = 'residential';
-
-// Phase 1 state
-var buyersAgencyEnabled = false, baManualOverride = false;
-var conveyancingManualOverride = false, valuationManualOverride = false;
-var bufferEnabled = false, bufferManualOverride = false;
-var loanManualOverride = false;
-var lastCalcResults = null;
-
-// Phase 2 state
-var p2RentOverride = false;
-var p2WaleBelow2 = false;
-var p2DevLeaseback = false;
-var p2SelectedAsset = 'industrial';
-var lastP2Results = null;
-var p2SortCol = 'maxP';
-var p2SortDir = -1; // -1 = descending, 1 = ascending
+const STATES = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
+let selectedState       = null;
+let propType            = 'residential';
+let buyersAgencyEnabled = false;
+let baManualOverride    = false;
+let conveyancingManualOverride = false;
+let valuationManualOverride    = false;
+let bufferEnabled       = false;
+let bufferManualOverride= false;
+let loanManualOverride  = false;
+let lastCalcResults     = null;
+// ── Phase 2 globals ───────────────────────────────────────
+let p2WaleToggle    = false;
+let p2DevLeaseback  = false;
+let p2AssetType     = 'industrial';
+let p2YieldMode     = 'pct';
+let lastP2Results   = null;
+let p2SortCol       = 'maxP';
+let p2SortDir       = 'desc';
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 2 — STAMP DUTY FUNCTIONS (Phase 1 — unchanged)
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 2 — STAMP DUTY
+     State-specific duty functions + dispatcher
+     ============================================================ -->
 <script>
 function calcQLD(v){if(v<=5000)return 0;if(v<=75000)return Math.ceil((v-5000)/100)*1.50;if(v<=540000)return 1050+Math.ceil((v-75000)/100)*3.50;if(v<=1000000)return 17325+Math.ceil((v-540000)/100)*4.50;return 38025+Math.ceil((v-1000000)/100)*5.75;}
 function calcNSW(v){if(v<=17000)return Math.ceil(v/100)*1.25;if(v<=37000)return 212+Math.ceil((v-17000)/100)*1.50;if(v<=99000)return 512+Math.ceil((v-37000)/100)*1.75;if(v<=372000)return 1597+Math.ceil((v-99000)/100)*3.50;if(v<=1240000)return 11152+Math.ceil((v-372000)/100)*4.50;if(v<=3721000)return 50212+Math.ceil((v-1240000)/100)*5.50;return 186667+Math.ceil((v-3721000)/100)*7.00;}
@@ -509,9 +450,10 @@ function calcStampDuty(state, v) {
 }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 3 — FEE FUNCTIONS (Phase 1 — unchanged)
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 3 — FEES & CHARGES
+     Transfer, registration, conveyancing, valuation, BA, buffer
+     ============================================================ -->
 <script>
 function calcTransferFee(state, price) {
   switch(state){
@@ -576,9 +518,24 @@ function transferLabel(s) {
 }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 4 — ALERT BUILDER (Phase 1 — unchanged)
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 4 — LMI
+     Residential only. Based on base loan LVR (excl. LMI).
+     ≤80%: nil | >80%–88%: 2% of price | >88%: 4% of price
+     ============================================================ -->
+<script>
+function calcLMI(price, lvrNum) {
+  if(propType==='commercial') return 0;
+  if(lvrNum<=80) return 0;
+  if(lvrNum<=88) return Math.round(price*0.02);
+  return Math.round(price*0.04);
+}
+</script>
+
+<!-- ============================================================
+     MODULE 5 — ALERTS
+     State-specific informational and warning messages
+     ============================================================ -->
 <script>
 function buildAlerts(state, price) {
   var A=[], comm=propType==='commercial';
@@ -600,26 +557,19 @@ function buildAlerts(state, price) {
 }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 5 — SHARED UI + PHASE 1 CALC
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 6 — UI CONTROLS
+     Type toggle, feature toggles, input helpers, label updates
+     ============================================================ -->
 <script>
-// ── State grid ─────────────────────────────────────────────────
-var STATES = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
-var grid = document.getElementById('stateGrid');
-STATES.forEach(function(s) {
-  var b = document.createElement('button');
-  b.className = 'state-btn'; b.textContent = s;
-  b.onclick = function() {
-    selectedState = s;
-    document.querySelectorAll('.state-btn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active');
-    calcAll();
-  };
-  grid.appendChild(b);
-});
+function updateLoanLabel() {
+  var el = document.getElementById('loanLabel');
+  if(!el) return;
+  var isComm = propType === 'commercial';
+  el.innerHTML = (isComm ? 'Loan Amount' : 'Base Loan Amount (excl. LMI)') +
+    ' <span style="color:#475569;font-weight:400">\u2014 edit to override</span>';
+}
 
-// ── Type toggle ────────────────────────────────────────────────
 function setType(t) {
   propType = t;
   baManualOverride = false;
@@ -633,947 +583,831 @@ function setType(t) {
   var badge = document.getElementById('typeBadge');
   badge.textContent = isComm ? 'COMMERCIAL' : 'INVESTOR';
   badge.className = 'badge ' + (isComm ? 'badge-green' : 'badge-blue');
+  updateLoanLabel();
   calcAll();
 }
 
-// ── Tab switching ──────────────────────────────────────────────
-function switchTab(n) {
-  document.getElementById('tab1Panel').style.display = n===1 ? '' : 'none';
-  document.getElementById('tab2Panel').style.display = n===2 ? '' : 'none';
-  document.getElementById('tab1btn').className = 'tab-btn' + (n===1 ? ' active' : '');
-  document.getElementById('tab2btn').className = 'tab-btn' + (n===2 ? ' active' : '');
-}
-
-// ── Call both calcs ────────────────────────────────────────────
-function calcAll() {
-  calc();    // Phase 1
-  p2Calc();  // Phase 2
-}
-
-// ── Phase 1 feature toggles ────────────────────────────────────
 function toggleBA() {
-  buyersAgencyEnabled = !buyersAgencyEnabled; baManualOverride = false;
+  buyersAgencyEnabled = !buyersAgencyEnabled;
+  baManualOverride = false;
   document.getElementById('baTrack').className = 'toggle-track' + (buyersAgencyEnabled ? ' on' : '');
   document.getElementById('baAmountRow').style.display = buyersAgencyEnabled ? 'block' : 'none';
   calc();
 }
+
 function toggleBuffer() {
-  bufferEnabled = !bufferEnabled; bufferManualOverride = false;
+  bufferEnabled = !bufferEnabled;
+  bufferManualOverride = false;
   document.getElementById('bufTrack').className = 'toggle-track' + (bufferEnabled ? ' on' : '');
   document.getElementById('bufAmountRow').style.display = bufferEnabled ? 'block' : 'none';
   calc();
 }
 
-// ── Input formatting ───────────────────────────────────────────
 function fmtInp(e) {
   var raw = e.target.value.replace(/[^0-9]/g, '');
   e.target.value = raw ? Number(raw).toLocaleString('en-AU') : '';
 }
+
 function getVal(id) { return Number(document.getElementById(id).value.replace(/[^0-9]/g, '')); }
+</script>
 
-document.getElementById('price').addEventListener('input', function(e) { fmtInp(e); calc(); });
-document.getElementById('loan').addEventListener('input', function(e) {
-  fmtInp(e); loanManualOverride = !!e.target.value.replace(/[^0-9]/g, ''); calc();
-});
-document.getElementById('convAmount').addEventListener('input', function(e) {
-  fmtInp(e); conveyancingManualOverride = !!e.target.value.replace(/[^0-9]/g, ''); calc();
-});
-document.getElementById('valAmount').addEventListener('input', function(e) {
-  fmtInp(e); valuationManualOverride = !!e.target.value.replace(/[^0-9]/g, ''); calc();
-});
-document.getElementById('baAmount').addEventListener('input', function(e) {
-  fmtInp(e); baManualOverride = true; calc();
-});
-document.getElementById('bufAmount').addEventListener('input', function(e) {
-  fmtInp(e); bufferManualOverride = !!e.target.value.replace(/[^0-9]/g, ''); calc();
-});
+<!-- ============================================================
+     MODULE 7 — RENDERING
+     Drill-down toggle, HTML helpers, main calc(), showEmpty()
+     ============================================================ -->
+<script>
+function toggleDrillDown() {
+  var dd   = document.getElementById('ftcDrillDown');
+  var chev = document.getElementById('ftcChevron');
+  if(!dd || !chev) return;
+  var isOpen = !dd.classList.contains('ftc-dd-hidden');
+  if(isOpen){
+    dd.classList.add('ftc-dd-hidden');
+    chev.classList.add('ftc-chev-closed');
+  } else {
+    dd.classList.remove('ftc-dd-hidden');
+    chev.classList.remove('ftc-chev-closed');
+  }
+}
 
-// ── Phase 1 helpers ────────────────────────────────────────────
 function fmt(n){ return '$'+n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function pct(v,t){ return t>0?(v/t*100).toFixed(1):'0.0'; }
 
-// ── Phase 1 Chart ──────────────────────────────────────────────
-var p1chart = null;
-function renderP1Chart(items) {
-  var el = document.getElementById('donutChart'); if(!el) return;
-  if(p1chart) p1chart.destroy();
-  p1chart = new Chart(el,{
-    type:'doughnut',
-    data:{labels:items.map(function(i){return i.label;}),datasets:[{data:items.map(function(i){return i.val;}),backgroundColor:items.map(function(i){return i.color;}),borderWidth:2,borderColor:'#1e293b'}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{
-      legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:10},padding:7,boxWidth:10,boxHeight:10}},
-      tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+fmt(ctx.raw)+' ('+pct(ctx.raw,items.reduce(function(a,b){return a+b.val;},0))+'%)';}}}
-    }}
-  });
+function tRow(dot,label,tag,amt,p,dimAmt) {
+  return '<tr><td><div class="item-cell"><span class="dot" style="background:'+dot+'"></span>'+label+(tag?' <span class="est-tag">'+tag+'</span>':'')+'</div></td><td class="amt"'+(dimAmt?' style="color:#86efac"':'')+'>'+fmt(amt)+'</td><td class="pct">'+p+'</td></tr>';
 }
 
-// ── Copy table (Phase 1) ──────────────────────────────────────
+function calc() {
+  var price=getVal('price');
+  if(!selectedState||!price){ showEmpty(); return; }
+
+  var comm=propType==='commercial';
+  var stamp=calcStampDuty(selectedState,price);
+  var transfer=calcTransferFee(selectedState,price);
+  var mortgage=calcMortgageReg(selectedState);
+
+  // Loan
+  var autoLoan=calcAutoLoan(price);
+  var loanInp=document.getElementById('loan');
+  if(loanInp&&!loanManualOverride) loanInp.value=autoLoan.toLocaleString('en-AU');
+  var loanHint=document.getElementById('loanHint');
+  if(loanHint) {
+    loanHint.textContent = loanManualOverride
+      ? 'Auto-calculated: '+fmt(autoLoan)+' (using your override)'
+      : (comm ? '70% LVR' : '80% LVR');
+  }
+
+  // Conveyancing
+  var autoConv=calcConveyancing(price);
+  var convInp=document.getElementById('convAmount');
+  if(convInp&&!conveyancingManualOverride) convInp.value=autoConv.toLocaleString('en-AU');
+  var conv=conveyancingManualOverride?(getVal('convAmount')||autoConv):autoConv;
+  var convHint=document.getElementById('convHint');
+  if(convHint) {
+    convHint.textContent = conveyancingManualOverride
+      ? 'Auto-calculated: '+fmt(autoConv)+' (using your override)'
+      : (comm?'Commercial estimate - varies by transaction complexity':'Residential estimate - varies by conveyancer');
+  }
+
+  // Valuation
+  var autoVal=calcValuation(price);
+  var valInp=document.getElementById('valAmount');
+  if(valInp&&!valuationManualOverride) valInp.value=autoVal.toLocaleString('en-AU');
+  var val=valuationManualOverride?(getVal('valAmount')||autoVal):autoVal;
+
+  // Buyers agency
+  var ba=0;
+  if(buyersAgencyEnabled) {
+    var autoBA=calcBuyersAgency(price);
+    var baInp=document.getElementById('baAmount');
+    if(baInp&&!baManualOverride) baInp.value=autoBA.toLocaleString('en-AU');
+    ba=getVal('baAmount')||autoBA;
+    var baHint=document.getElementById('baHint');
+    if(baHint) {
+      if(comm) {
+        var pctBased=Math.round(price*0.019*1.1);
+        baHint.textContent=pctBased>=16500 ? '1.9% x '+fmt(price)+' + GST = '+fmt(pctBased) : 'Min. fee applies - 1.9% ('+fmt(Math.round(price*0.019))+') is below $15,000 minimum';
+      } else {
+        baHint.textContent='Flat $15,000 + 10% GST = $16,500';
+      }
+    }
+  }
+
+  // Buffer
+  var buf=0;
+  if(bufferEnabled) {
+    var autoBuf=calcBuffer(price);
+    var bufInp=document.getElementById('bufAmount');
+    if(bufInp&&!bufferManualOverride) bufInp.value=autoBuf.toLocaleString('en-AU');
+    buf=getVal('bufAmount')||autoBuf;
+    var bufHint=document.getElementById('bufHint');
+    if(bufHint) {
+      bufHint.textContent = bufferManualOverride
+        ? 'Auto-calculated: '+fmt(autoBuf)+' (using your override)'
+        : 'Auto: 5% of purchase price = '+fmt(autoBuf);
+    }
+  }
+
+  var total=stamp+transfer+mortgage+conv+val+ba+buf;
+  var loan=getVal('loan')||autoLoan;
+  var isExempt=comm&&(selectedState==='SA'||(selectedState==='ACT'&&price<=2000000));
+  var showXfer=transfer>0;
+  var perHundred=(total/price*100).toFixed(2);
+  var lvr=(loan/price*100).toFixed(1);
+  var lvrNum=parseFloat(lvr);
+  var lmi=calcLMI(price,lvrNum);
+  var loanIncLMI=loan+lmi;
+  var totalRequired=price+total;
+  var fundsRequired=totalRequired-loan;
+
+  lastCalcResults={
+    state:selectedState, propType:propType, price:price,
+    stamp:stamp, transfer:transfer, mortgage:mortgage,
+    conv:conv, val:val, ba:ba, buf:buf, total:total,
+    loan:loan, lmi:lmi, loanIncLMI:loanIncLMI,
+    totalRequired:totalRequired, fundsRequired:fundsRequired, lvr:lvr,
+    isExempt:isExempt, showXfer:showXfer,
+    convO:conveyancingManualOverride, valO:valuationManualOverride,
+    baO:baManualOverride, bufO:bufferManualOverride,
+    baEnabled:buyersAgencyEnabled, bufEnabled:bufferEnabled
+  };
+
+  // Build drill-down HTML
+  var drillHTML =
+    '<table class="breakdown-table">' +
+    '<thead><tr><th>Item</th><th class="r">Amount</th><th class="r">% of Costs</th></tr></thead>' +
+    '<tbody>' +
+    '<tr><td><div class="item-cell"><span class="dot" style="background:#3b82f6"></span>Stamp Duty / Transfer Duty' +
+      (isExempt?' <span class="exempt-badge">EXEMPT</span>':'') +
+    '</div></td><td class="amt"'+(isExempt?' style="color:#86efac"':'')+'>'+fmt(stamp)+'</td><td class="pct">'+pct(stamp,total)+'%</td></tr>' +
+    (showXfer ? tRow('#22d3ee',transferLabel(selectedState),'',transfer,pct(transfer,total)+'%',false) : '') +
+    tRow('#a78bfa','Mortgage Registration Fee','',mortgage,pct(mortgage,total)+'%',false) +
+    tRow('#f59e0b','Conveyancing / Legal Fees',conveyancingManualOverride?'overridden':'est.',conv,pct(conv,total)+'%',false) +
+    tRow('#f43f5e','Valuation Fee',valuationManualOverride?'overridden':'est.',val,pct(val,total)+'%',false) +
+    (ba>0 ? tRow('#10b981','Buyers Agency Fee','inc. GST'+(baManualOverride?' · overridden':''),ba,pct(ba,total)+'%',false) : '') +
+    (buf>0 ? tRow('#6b7280','Contingency Buffer','planning cushion',buf,'-',false) : '') +
+    '</tbody></table>' +
+    '<div class="total-row"><span class="total-label">TOTAL ESTIMATED CLOSING COSTS</span><span class="total-value">'+fmt(total)+'</span></div>' +
+    '<p class="total-qualifier">* Government fees are fixed by law. Conveyancing, valuation and buyers agency fees are estimates — obtain quotes before settlement.</p>' +
+    '<div class="stats-row">' +
+    '<div class="stat-box"><div class="stat-label">Costs as % of purchase price</div><div class="stat-value">'+perHundred+'%</div></div>' +
+    '<div class="stat-box"><div class="stat-label">Per $100 of value</div><div class="stat-value">$'+perHundred+'</div></div>' +
+    '</div>';
+
+  // Build alerts HTML
+  var alerts=buildAlerts(selectedState,price);
+  var alertsHTML=alerts.map(function(a){
+    return '<div class="alert '+a.t+'"><span class="alert-icon">'+a.i+'</span><span>'+a.h+'</span></div>';
+  }).join('');
+  if(fundsRequired<0) alertsHTML+='<div class="alert warning"><span class="alert-icon">⚠️</span><span><strong>Loan exceeds total required:</strong> Your loan amount is larger than purchase price + closing costs. You may receive cash back at settlement — confirm with your lender.</span></div>';
+
+  // Build FTC card
+  var lvrTag = loanManualOverride ? 'overridden' : (comm ? '70% LVR' : '80% LVR');
+  var equityPct = ((price-loan)/price*100).toFixed(1);
+  var costsOnFunds = fundsRequired>0 ? (total/fundsRequired*100).toFixed(1) : '0.0';
+  var lvrClass = lvrNum>80 ? 'lvr-warn' : '';
+  var lvrFlag  = lvrNum>80 ? ' ⚠️' : '';
+
+  var ftcCard =
+    '<div class="ftc-card">' +
+    '<div class="card-title">Estimated Funds to Complete</div>' +
+    '<div class="ftc-rows">' +
+    '<div class="ftc-row">' +
+      '<span class="ftc-label"><span class="ftc-op">&nbsp;</span>Purchase Price</span>' +
+      '<span class="ftc-amount">'+fmt(price)+'</span>' +
+    '</div>' +
+    '<div class="ftc-row ftc-costs-row" onclick="toggleDrillDown()">' +
+      '<span class="ftc-label">' +
+        '<span class="ftc-op">+</span>Estimated Closing Costs' +
+        '<span class="est-tag">'+perHundred+'% of price</span>' +
+      '</span>' +
+      '<span class="ftc-right">' +
+        '<span class="ftc-amount">'+fmt(total)+'</span>' +
+        '<span class="ftc-chevron" id="ftcChevron">&#9660;</span>' +
+      '</span>' +
+    '</div>' +
+    '<div class="ftc-drilldown" id="ftcDrillDown">' + drillHTML + '</div>' +
+    '<hr class="ftc-divider">' +
+    '<div class="ftc-row subtotal">' +
+      '<span class="ftc-label"><span class="ftc-op">=</span>Total Required</span>' +
+      '<span class="ftc-amount">'+fmt(totalRequired)+'</span>' +
+    '</div>' +
+    '<div class="ftc-row deduct">' +
+      '<span class="ftc-label"><span class="ftc-op">&minus;</span>Base Loan Amount <span class="est-tag">'+lvrTag+'</span></span>' +
+      '<span class="ftc-amount">('+fmt(loan)+')</span>' +
+    '</div>' +
+    (lmi>0 ?
+      '<div class="ftc-row ftc-lmi-row">' +
+        '<span class="ftc-label">&#8627; LMI estimate — capitalised into loan <span class="est-tag">'+(lvrNum<=88?'2%':'4%')+' of price · not payable upfront</span></span>' +
+        '<span class="ftc-amount">+'+fmt(lmi)+'</span>' +
+      '</div>' +
+      '<div class="ftc-row ftc-lmi-row" style="border-bottom:none">' +
+        '<span class="ftc-label">&#8627; Total loan inc. LMI</span>' +
+        '<span class="ftc-amount">'+fmt(loanIncLMI)+'</span>' +
+      '</div>'
+    : '') +
+    '</div>' +
+    '<div class="ftc-result">' +
+      '<span class="ftc-result-label">ESTIMATED FUNDS REQUIRED</span>' +
+      '<span class="ftc-result-value">'+fmt(fundsRequired)+'</span>' +
+    '</div>' +
+    '<div class="ftc-stats">' +
+      '<div class="ftc-stat"><div class="stat-label">LVR (base)</div><div class="stat-value '+lvrClass+'">'+lvr+'%'+lvrFlag+'</div></div>' +
+      '<div class="ftc-stat"><div class="stat-label">Deposit / Equity</div><div class="stat-value">'+equityPct+'%</div></div>' +
+      '<div class="ftc-stat"><div class="stat-label">Costs as % of funds</div><div class="stat-value">'+costsOnFunds+'%</div></div>' +
+    '</div>' +
+    alertsHTML +
+    '<div class="export-btns no-print">' +
+      '<button class="export-btn" id="copyBtn" onclick="copyTable()">Copy Table</button>' +
+      '<button class="export-btn" onclick="window.print()">Print / Save PDF</button>' +
+    '</div>' +
+    '</div>';
+
+  // Build disclaimer card
+  var disclaimerCard =
+    '<div class="card"><div class="disclaimer">' +
+    '<strong>Australian residents only:</strong> This calculator applies standard rates for Australian citizens and permanent residents. Foreign buyers pay additional surcharges — NSW 9%, VIC/QLD/TAS 8%, WA/SA 7%. ACT and NT have no foreign buyer surcharge.<br><br>' +
+    '<strong>Government fees</strong> (stamp duty, transfer registration, mortgage registration) are fixed amounts per state legislation.<br>' +
+    '<strong>Conveyancing, valuation and buyers agency fees</strong> are indicative estimates unless overridden. Buyers agency fee is inclusive of 10% GST. Valuation: residential $500 per million or part thereof; commercial $1,500 to $2,000 (under $1M) then $2,000 per million.<br>' +
+    '<strong>Contingency buffer</strong> (if included) defaults to 5% of purchase price — a planning cushion only.<br>' +
+    '<strong>Base loan amount</strong> defaults to 80% LVR (residential) or 70% LVR (commercial) — edit to override.<br>' +
+    '<strong>LMI estimate</strong> (residential only, LVR &gt; 80%): indicative only at 2% of purchase price (LVR 80–88%) or 4% (LVR &gt; 88%). Actual LMI is set by the insurer (Helia or QBE) and varies by lender — obtain a formal quote. LMI is capitalised into the loan and is not an upfront cash cost.<br><br>' +
+    '<strong>Commercial:</strong> SA exempt (s.71DC). ACT exempt under $2M; flat 5% above $2M. WA general rate. NSW no premium rate above $3.721M. VIC CIPT after 10 years. QLD/TAS/NT same rates as residential.<br><br>' +
+    '<strong>Source:</strong> State revenue offices &amp; stampduty.calculatorsaustralia.com.au (2026).' +
+    '</div></div>';
+
+  document.getElementById('resultsSection').innerHTML = ftcCard + disclaimerCard;
+}
+
+function showEmpty() {
+  document.getElementById('resultsSection').innerHTML =
+    '<div class="card empty-state"><div class="icon">&#129518;</div><p>Select a state, choose property type, and enter a purchase price</p></div>';
+}
+</script>
+
+<!-- ============================================================
+     MODULE 8 — EXPORT
+     Copy table (client-friendly format) + print
+     ============================================================ -->
+<script>
 function copyTable() {
   if(!lastCalcResults) return;
   var r=lastCalcResults;
-  function fA(n){ return n.toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
-  function fP(v,t){ return t>0 ? (v/t*100).toFixed(1)+'%' : '-'; }
-  var rows=[
-    ['Property Closing Costs - '+r.state+' | '+(r.propType==='commercial'?'Commercial':'Residential Investment'),'',''],
-    ['','',''],['Item','Amount (AUD)','% Total'],
-    ['Purchase Price', fA(r.price), '-'],
-    ['Stamp Duty / Transfer Duty'+(r.isExempt?' (EXEMPT)':''), fA(r.stamp), fP(r.stamp,r.total)]
-  ];
-  if(r.showXfer) rows.push([transferLabel(r.state), fA(r.transfer), fP(r.transfer,r.total)]);
-  rows.push(['Mortgage Registration Fee', fA(r.mortgage), fP(r.mortgage,r.total)]);
-  rows.push(['Conveyancing / Legal Fees ('+(r.convO?'overridden':'est.')+')', fA(r.conv), fP(r.conv,r.total)]);
-  rows.push(['Valuation Fee ('+(r.valO?'overridden':'est.')+')', fA(r.val), fP(r.val,r.total)]);
-  if(r.baEnabled) rows.push(['Buyers Agency Fee inc. GST', fA(r.ba), fP(r.ba,r.total)]);
-  if(r.bufEnabled) rows.push(['Contingency Buffer', fA(r.buf), '-']);
-  rows.push(['','','']);
-  rows.push(['TOTAL ESTIMATED CLOSING COSTS', fA(r.total), '100%']);
-  var text = rows.map(function(row){ return row.join('\t'); }).join('\n');
-  var btn = document.getElementById('copyBtn');
+
+  function fA(n){ return '$'+Math.round(n).toLocaleString('en-AU'); }
+
+  var typeLabel  = r.propType==='commercial' ? 'COMMERCIAL' : 'RESIDENTIAL INVESTMENT';
+  var depositAmt = r.price - r.loan;
+  var depositPct = (depositAmt/r.price*100).toFixed(1);
+  var sep        = '------------------------------------------------';
+
+  var lines = [];
+  lines.push('PURCHASE OF '+r.state+' PROPERTY \u2014 '+typeLabel);
+  lines.push('');
+  lines.push('Estimated Purchase Price\t'+fA(r.price));
+  lines.push('');
+  lines.push('Proposed Loan ('+r.lvr+'% LVR)\t'+fA(r.loan));
+  if(r.lmi>0) lines.push('  LMI estimate (capitalised into loan, not upfront)\t'+fA(r.lmi));
+  if(r.lmi>0) lines.push('  Total Loan inc. LMI\t'+fA(r.loanIncLMI));
+  lines.push('');
+  lines.push('Costs to Complete Purchase');
+  lines.push('  Deposit ('+depositPct+'%)\t'+fA(depositAmt));
+  lines.push('  Stamp Duty / Transfer Duty'+(r.isExempt?' (Exempt)':'')+'\t'+fA(r.stamp));
+  if(r.showXfer) lines.push('  '+transferLabel(r.state)+'\t'+fA(r.transfer));
+  lines.push('  Mortgage Registration Fee\t'+fA(r.mortgage));
+  lines.push('  Legal / Conveyancing Fees (est.)\t'+fA(r.conv));
+  lines.push('  Valuation Fee (est.)\t'+fA(r.val));
+  if(r.baEnabled) lines.push('  Buyers Agency Fee incl. GST (est.)\t'+fA(r.ba));
+  if(r.bufEnabled) lines.push('  Contingency Buffer\t'+fA(r.buf));
+  lines.push(sep);
+  lines.push('Total \u2014 Estimated Funds Required\t'+fA(r.fundsRequired));
+  lines.push('');
+  lines.push('* Government fees (stamp duty, transfer registration, mortgage registration) are fixed by law.');
+  lines.push('* Legal, valuation and buyers agency fees are estimates \u2014 obtain quotes before settlement.');
+
+  var text = lines.join('\n');
+  var btn  = document.getElementById('copyBtn');
   function succeed() {
-    btn.textContent='Copied!'; btn.style.color='#10b981'; btn.style.borderColor='#10b981';
+    btn.textContent = 'Copied!';
+    btn.style.color = '#10b981';
+    btn.style.borderColor = '#10b981';
     setTimeout(function(){ btn.textContent='Copy Table'; btn.style.color=''; btn.style.borderColor=''; }, 2000);
   }
-  if(navigator.clipboard) navigator.clipboard.writeText(text).then(succeed).catch(function(){ fallbackCopy(text,succeed); });
-  else fallbackCopy(text,succeed);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(succeed).catch(function(){ fallbackCopy(text,succeed); });
+  } else {
+    fallbackCopy(text,succeed);
+  }
 }
+
 function fallbackCopy(text, cb) {
   var ta=document.createElement('textarea');
   ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
   document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); cb(); }catch(e){}
+  try{ document.execCommand('copy'); cb(); } catch(e){}
   document.body.removeChild(ta);
 }
+</script>
 
-// ── PHASE 1 MAIN CALC ─────────────────────────────────────────
-function calc() {
-  var price = getVal('price');
-  if(!selectedState || !price){ showP1Empty(); return; }
+<!-- ============================================================
+     MODULE 9 — PHASE 2 LENDER CONFIG
+     P2_LENDERS defaults + live DOM reader
+     ============================================================ -->
+<script>
+var P2_LENDERS = [
+  {id:'boq_ld',name:'BOQ Leasedoc',       rate:6.89,buf:0.25,icr:1.30,app:0.50,maxLvr:70,valWaive:false},
+  {id:'boq_fd',name:'BOQ Full Doc',        rate:6.89,buf:0.50,icr:1.25,app:0.50,maxLvr:70,valWaive:false},
+  {id:'cba_lo',name:'CBA \u2264$1.5M',    rate:6.79,buf:0.00,icr:1.50,app:0.50,maxLvr:65,valWaive:true},
+  {id:'cba_hi',name:'CBA >$1.5M',         rate:7.09,buf:0.00,icr:1.50,app:0.50,maxLvr:65,valWaive:false},
+  {id:'nab_ld',name:'NAB Leasedoc',       rate:7.09,buf:0.00,icr:1.50,app:0.75,maxLvr:65,valWaive:false},
+  {id:'mac_ld',name:'Macquarie Leasedoc', rate:7.29,buf:1.00,icr:1.50,app:0.50,maxLvr:65,valWaive:true},
+  {id:'wbc_ld',name:'Westpac Leasedoc',   rate:7.19,buf:0.50,icr:1.25,app:0.50,maxLvr:70,valWaive:false},
+];
+var P2_ASSETS = [
+  {id:'industrial',label:'Industrial'},{id:'office',label:'Office'},{id:'retail',label:'Retail'},
+  {id:'lfr',       label:'LFR'},       {id:'childcare',label:'Childcare'},{id:'other',label:'Other'},
+];
 
-  var comm = propType==='commercial';
-  var stamp = calcStampDuty(selectedState, price);
-  var transfer = calcTransferFee(selectedState, price);
-  var mortgage = calcMortgageReg(selectedState);
-
-  var autoLoan = calcAutoLoan(price);
-  var loanInp = document.getElementById('loan');
-  if(loanInp && !loanManualOverride) loanInp.value = autoLoan.toLocaleString('en-AU');
-  var loanHint = document.getElementById('loanHint');
-  if(loanHint) loanHint.textContent = loanManualOverride ? 'Auto-calculated: '+fmt(autoLoan)+' (using your override)' : (comm?'70% LVR':'80% LVR');
-
-  var autoConv = calcConveyancing(price);
-  var convInp = document.getElementById('convAmount');
-  if(convInp && !conveyancingManualOverride) convInp.value = autoConv.toLocaleString('en-AU');
-  var conv = conveyancingManualOverride ? (getVal('convAmount')||autoConv) : autoConv;
-  var convHint = document.getElementById('convHint');
-  if(convHint) convHint.textContent = conveyancingManualOverride ? 'Auto-calculated: '+fmt(autoConv)+' (using your override)' : (comm?'Commercial estimate — varies by complexity':'Residential estimate — varies by conveyancer');
-
-  var autoVal = calcValuation(price);
-  var valInp = document.getElementById('valAmount');
-  if(valInp && !valuationManualOverride) valInp.value = autoVal.toLocaleString('en-AU');
-  var val = valuationManualOverride ? (getVal('valAmount')||autoVal) : autoVal;
-
-  var ba = 0;
-  if(buyersAgencyEnabled) {
-    var autoBA = calcBuyersAgency(price);
-    var baInp = document.getElementById('baAmount');
-    if(baInp && !baManualOverride) baInp.value = autoBA.toLocaleString('en-AU');
-    ba = getVal('baAmount') || autoBA;
-    var baHint = document.getElementById('baHint');
-    if(baHint) {
-      if(comm){ var pb=Math.round(price*0.019*1.1); baHint.textContent = pb>=16500 ? '1.9% × '+fmt(price)+' + GST = '+fmt(pb) : 'Min. fee — 1.9% ('+fmt(Math.round(price*0.019))+') is below $15,000 minimum'; }
-      else baHint.textContent = 'Flat $15,000 + 10% GST = $16,500';
-    }
-  }
-
-  var buf = 0;
-  if(bufferEnabled) {
-    var autoBuf = calcBuffer(price);
-    var bufInp = document.getElementById('bufAmount');
-    if(bufInp && !bufferManualOverride) bufInp.value = autoBuf.toLocaleString('en-AU');
-    buf = getVal('bufAmount') || autoBuf;
-    var bufHint = document.getElementById('bufHint');
-    if(bufHint) bufHint.textContent = bufferManualOverride ? 'Auto-calculated: '+fmt(autoBuf)+' (using your override)' : 'Auto: 5% of purchase price = '+fmt(autoBuf);
-  }
-
-  var total = stamp+transfer+mortgage+conv+val+ba+buf;
-  var isExempt = comm&&(selectedState==='SA'||(selectedState==='ACT'&&price<=2000000));
-  var perHundred = (total/price*100).toFixed(2);
-  var showXfer = transfer > 0;
-
-  lastCalcResults = {state:selectedState,propType:propType,price:price,stamp:stamp,transfer:transfer,mortgage:mortgage,conv:conv,val:val,ba:ba,buf:buf,total:total,isExempt:isExempt,showXfer:showXfer,convO:conveyancingManualOverride,valO:valuationManualOverride,baO:baManualOverride,bufO:bufferManualOverride,baEnabled:buyersAgencyEnabled,bufEnabled:bufferEnabled};
-
-  var chartItems = [];
-  if(stamp>0)    chartItems.push({label:'Stamp Duty',val:stamp,color:'#3b82f6'});
-  if(transfer>0) chartItems.push({label:transferLabel(selectedState),val:transfer,color:'#22d3ee'});
-  if(mortgage>0) chartItems.push({label:'Mortgage Reg.',val:mortgage,color:'#a78bfa'});
-  if(conv>0)     chartItems.push({label:'Conveyancing',val:conv,color:'#f59e0b'});
-  if(val>0)      chartItems.push({label:'Valuation',val:val,color:'#f43f5e'});
-  if(ba>0)       chartItems.push({label:'Buyers Agency',val:ba,color:'#10b981'});
-
-  var alerts = buildAlerts(selectedState, price);
-  var alertsHTML = alerts.map(function(a){ return '<div class="alert '+a.t+'"><span class="alert-icon">'+a.i+'</span><span>'+a.h+'</span></div>'; }).join('');
-
-  function tRow(dot,label,tag,amt,p,dimAmt) {
-    return '<tr><td><div class="item-cell"><span class="dot" style="background:'+dot+'"></span>'+label+(tag?' <span class="est-tag">'+tag+'</span>':'')+'</div></td><td class="amt"'+(dimAmt?' style="color:#86efac"':'')+'>'+fmt(amt)+'</td><td class="pct">'+p+'</td></tr>';
-  }
-
-  document.getElementById('p1ResultsSection').innerHTML =
-    '<div class="results-grid">'+
-    '<div class="card">'+
-    '<div class="card-title">Cost Breakdown</div>'+
-    '<table class="breakdown-table">'+
-    '<thead><tr><th>Item</th><th class="r">Amount</th><th class="r">% Total</th></tr></thead>'+
-    '<tbody>'+
-    tRow('#475569','Purchase Price','',price,'-',false)+
-    '<tr><td><div class="item-cell"><span class="dot" style="background:#3b82f6"></span>Stamp Duty / Transfer Duty'+(isExempt?' <span class="exempt-badge">EXEMPT</span>':'')+'</div></td><td class="amt"'+(isExempt?' style="color:#86efac"':'')+'>'+fmt(stamp)+'</td><td class="pct">'+pct(stamp,total)+'%</td></tr>'+
-    (showXfer ? tRow('#22d3ee',transferLabel(selectedState),'',transfer,pct(transfer,total)+'%',false) : '')+
-    tRow('#a78bfa','Mortgage Registration Fee','',mortgage,pct(mortgage,total)+'%',false)+
-    tRow('#f59e0b','Conveyancing / Legal Fees',conveyancingManualOverride?'overridden':'est.',conv,pct(conv,total)+'%',false)+
-    tRow('#f43f5e','Valuation Fee',valuationManualOverride?'overridden':'est.',val,pct(val,total)+'%',false)+
-    (ba>0 ? tRow('#10b981','Buyers Agency Fee','inc. GST'+(baManualOverride?' · overridden':''),ba,pct(ba,total)+'%',false) : '')+
-    (buf>0 ? tRow('#6b7280','Contingency Buffer','planning cushion',buf,'-',false) : '')+
-    '</tbody></table>'+
-    '<div class="total-row"><span class="total-label">TOTAL ESTIMATED CLOSING COSTS</span><span class="total-value">'+fmt(total)+'</span></div>'+
-    '<p class="total-qualifier">* Government fees are fixed by law. Conveyancing, valuation and buyers agency fees are estimates — obtain quotes before settlement.</p>'+
-    '<div class="stats-row"><div class="stat-box"><div class="stat-label">As % of purchase price</div><div class="stat-value">'+perHundred+'%</div></div><div class="stat-box"><div class="stat-label">Per $100 of value</div><div class="stat-value">$'+perHundred+'</div></div></div>'+
-    alertsHTML+
-    '<div class="export-btns"><button class="export-btn" id="copyBtn" onclick="copyTable()">Copy Table</button><button class="export-btn" onclick="window.print()">Print / Save PDF</button></div>'+
-    '</div>'+
-    '<div class="card">'+
-    '<div class="card-title">Visual Breakdown'+(buf>0?' <span style="font-size:10px;color:#64748b;font-weight:400;font-style:italic">excl. buffer</span>':'')+'</div>'+
-    '<div class="chart-wrap">'+
-    (chartItems.length>1 ? '<canvas id="donutChart" height="240"></canvas>' : '<div class="chart-empty">Stamp duty exempt —<br>chart not applicable</div>')+
-    '</div></div></div>'+
-    '<div class="card"><div class="disclaimer">'+
-    '<strong>Australian residents only:</strong> This calculator applies standard rates for Australian citizens and permanent residents. Foreign buyers pay additional surcharges — NSW 9%, VIC/QLD/TAS 8%, WA/SA 7%. ACT and NT have no foreign buyer surcharge.<br><br>'+
-    '<strong>Government fees</strong> (stamp duty, transfer registration, mortgage registration) are fixed amounts per state legislation.<br>'+
-    '<strong>Conveyancing, valuation and buyers agency fees</strong> are indicative estimates unless overridden. Buyers agency fee is inclusive of 10% GST. Valuation: residential $500 per million or part thereof; commercial $1,500 to $2,000 (under $1M) then $2,000 per million.<br>'+
-    '<strong>Contingency buffer</strong> (if included) defaults to 5% of purchase price — a planning cushion only.<br>'+
-    '<strong>Loan amount</strong> defaults to 80% LVR (residential) or 70% LVR (commercial) — edit to override.<br><br>'+
-    '<strong>Commercial:</strong> SA exempt (s.71DC). ACT exempt under $2M; flat 5% above $2M. WA general rate. NSW no premium rate above $3.721M. VIC CIPT after 10 years. QLD/TAS/NT same rates as residential.<br><br>'+
-    '<strong>Source:</strong> State revenue offices &amp; stampduty.calculatorsaustralia.com.au (2026).'+
-    '</div></div>';
-
-  if(chartItems.length>1) setTimeout(function(){ renderP1Chart(chartItems); }, 50);
-}
-
-function showP1Empty() {
-  document.getElementById('p1ResultsSection').innerHTML = '<div class="card empty-state"><div class="icon">&#129518;</div><p>Select a state, choose property type, and enter a purchase price</p></div>';
+function p2GetLenderConfig(id) {
+  var base=P2_LENDERS.filter(function(l){return l.id===id;})[0];
+  if(!base) return null;
+  function rn(elId,def){ var el=document.getElementById(elId); if(!el) return def; var v=parseFloat(el.value); return isNaN(v)?def:v; }
+  return {
+    id:base.id, name:base.name,
+    rate:   rn('p2r_'+id, base.rate),
+    buf:    rn('p2b_'+id, base.buf),
+    icr:    rn('p2i_'+id, base.icr),
+    app:    rn('p2a_'+id, base.app),
+    maxLvr: rn('p2l_'+id, base.maxLvr),
+    valWaive: base.valWaive
+  };
 }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 6 — PHASE 2: LENDER CONFIG
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 10 — PHASE 2 COMPUTATION ENGINE
+     Binary search max price across all lenders
+     ============================================================ -->
 <script>
-// Default assumptions for all 7 policy rows
-// Rates shown at max LVR; calculator reduces for ≤60% LVR automatically
-var P2_LENDERS = [
-  { id:'boq_ld', name:'BOQ Leasedoc',      rate:6.89, buf:0.25, icr:1.30, app:0.50, maxLvr:70, valW:false },
-  { id:'boq_fd', name:'BOQ Full Doc',       rate:6.89, buf:0.50, icr:1.25, app:0.50, maxLvr:70, valW:false },
-  { id:'cba_lo', name:'CBA ≤$1.5M',        rate:6.79, buf:0.00, icr:1.50, app:0.50, maxLvr:65, valW:true  },
-  { id:'cba_hi', name:'CBA >$1.5M',        rate:7.09, buf:0.00, icr:1.50, app:0.50, maxLvr:65, valW:false },
-  { id:'nab_ld', name:'NAB Leasedoc',      rate:7.09, buf:0.00, icr:1.50, app:0.75, maxLvr:65, valW:false },
-  { id:'mac_ld', name:'Macquarie Leasedoc',rate:7.29, buf:1.00, icr:1.50, app:0.50, maxLvr:65, valW:true  },
-  { id:'wbc_ld', name:'Westpac Leasedoc',  rate:7.19, buf:0.50, icr:1.25, app:0.50, maxLvr:70, valW:false },
-];
-
-// Asset type grid
-var P2_ASSETS = [
-  { id:'industrial', label:'Industrial' },
-  { id:'office',     label:'Office' },
-  { id:'retail',     label:'Retail' },
-  { id:'lfr',        label:'LFR' },
-  { id:'childcare',  label:'Childcare' },
-  { id:'other',      label:'Other' },
-];
-
-// Build asset buttons
-var assetGrid = document.getElementById('assetGrid');
-P2_ASSETS.forEach(function(a) {
-  var b = document.createElement('button');
-  b.className = 'asset-btn' + (a.id === p2SelectedAsset ? ' active' : '');
-  b.textContent = a.label;
-  b.onclick = function() {
-    p2SelectedAsset = a.id;
-    document.querySelectorAll('.asset-btn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active');
-    p2UpdateAssumptionsExclusions();
-    p2Calc();
-  };
-  assetGrid.appendChild(b);
-});
-
-// Build lender assumptions table body
-var tbody = document.getElementById('p2AssumTbody');
-P2_LENDERS.forEach(function(L) {
-  var tr = document.createElement('tr');
-  tr.id = 'assum_row_'+L.id;
-  tr.innerHTML =
-    '<td><span class="lender-name">'+L.name+'</span></td>'+
-    '<td><input type="number" id="p2_rate_'+L.id+'" value="'+L.rate+'" min="0" max="25" step="0.01"></td>'+
-    '<td><input type="number" id="p2_buf_'+L.id+'"  value="'+L.buf+'"  min="0" max="10" step="0.01"></td>'+
-    '<td><input type="number" id="p2_icr_'+L.id+'"  value="'+L.icr+'"  min="0.5" max="5" step="0.01"></td>'+
-    '<td><input type="number" id="p2_app_'+L.id+'"  value="'+L.app+'"  min="0" max="5"  step="0.01"></td>'+
-    '<td><input type="number" id="p2_lvr_'+L.id+'"  value="'+L.maxLvr+'" min="10" max="90" step="1"></td>'+
-    '<td><input type="checkbox" class="assumptions-check" id="p2_valw_'+L.id+'"'+(L.valW?' checked':'')+' onchange="p2Calc()"></td>';
-  tbody.appendChild(tr);
-  // Add change handler
-  ['rate','buf','icr','app','lvr'].forEach(function(f) {
-    var el = document.getElementById('p2_'+f+'_'+L.id);
-    if(el) el.addEventListener('change', function(){ p2Calc(); });
-  });
-});
-
-// Read current lender config from DOM (user overrides respected)
-function p2GetLenderConfig(id) {
-  var def = P2_LENDERS.find(function(d){ return d.id===id; });
-  var g = function(f){ var el=document.getElementById('p2_'+f+'_'+id); return el ? parseFloat(el.value)||0 : def[f]; };
-  var valw = document.getElementById('p2_valw_'+id);
-  return {
-    id: id,
-    name: def.name,
-    rate:   g('rate'),
-    buf:    g('buf'),
-    icr:    g('icr'),
-    app:    g('app'),
-    maxLvr: g('lvr'),
-    valW:   valw ? valw.checked : def.valW,
-  };
+// Returns CC breakdown; temporarily flips propType — safe (single-threaded)
+function p2CalcCC(price, valWaived) {
+  var old=propType; propType='commercial';
+  var stamp=calcStampDuty(selectedState,price);
+  var transfer=calcTransferFee(selectedState,price);
+  var mortgage=calcMortgageReg(selectedState);
+  var conv=calcConveyancing(price);
+  var val=valWaived?0:calcValuation(price);
+  propType=old;
+  return {total:stamp+transfer+mortgage+conv+val,govt:stamp+transfer+mortgage,stamp:stamp,transfer:transfer,mortgage:mortgage,conv:conv,val:val,valWaived:valWaived};
 }
 
-// Show excluded state in assumptions table
-function p2UpdateAssumptionsExclusions() {
-  P2_LENDERS.forEach(function(L) {
-    var excl = p2IsExcluded(L.id);
-    var row = document.getElementById('assum_row_'+L.id);
-    if(row) row.className = excl ? 'lender-excluded' : '';
-    var nameCell = row ? row.querySelector('.lender-name') : null;
-    var badge = row ? row.querySelector('.excl-badge') : null;
-    if(nameCell) {
-      if(excl && !badge) nameCell.insertAdjacentHTML('afterend','<span class="excl-badge">EXCL</span>');
-      if(!excl && badge) badge.remove();
-    }
-  });
-}
-
-function p2IsExcluded(id) {
-  if(id==='boq_ld' && p2DevLeaseback) return true;
-  if(id==='wbc_ld' && p2WaleBelow2)   return true;
+function p2IsExcluded(cfg) {
+  if(p2DevLeaseback && cfg.id==='boq_ld') return true;
+  if(p2WaleToggle   && cfg.id==='wbc_ld') return true;
   return false;
 }
-</script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 7 — PHASE 2: COMPUTATION ENGINE
-═══════════════════════════════════════════════════════════════ -->
-<script>
-// Commercial closing costs (always uses commercial propType context)
-function p2CalcCC(price, valWaived) {
-  var savedType = propType;
-  propType = 'commercial';
-  var stamp = calcStampDuty(selectedState, price);
-  var transfer = calcTransferFee(selectedState, price);
-  var mortg = calcMortgageReg(selectedState);
-  var conv = calcConveyancing(price);
-  var val = valWaived ? 0 : calcValuation(price);
-  propType = savedType;
-  return { total: stamp+transfer+mortg+conv+val, stamp:stamp, transfer:transfer, mortg:mortg, conv:conv, val:val };
-}
-
-// Get adjusted rate and ICR for a given lender (asset/flag-based adjustments only)
+// Returns {rate, icr} with WALE/asset adjustments applied
 function p2GetAdjustedParams(cfg) {
-  var rate = cfg.rate;
-  var icr  = cfg.icr;
-  if((cfg.id==='boq_ld' || cfg.id==='boq_fd') && p2WaleBelow2) rate += 0.60;
-  if(cfg.id==='nab_ld' && (p2SelectedAsset==='office' || p2SelectedAsset==='retail')) icr = 2.0;
-  return { rate: Math.max(0.01, rate), icr: Math.max(0.01, icr) };
+  var rate=cfg.rate, icr=cfg.icr;
+  if(p2WaleToggle && (cfg.id==='boq_ld'||cfg.id==='boq_fd')) rate+=0.60;
+  if(cfg.id==='nab_ld' && (p2AssetType==='office'||p2AssetType==='retail')) icr=2.0;
+  return {rate:rate, icr:icr};
 }
 
-// Effective max LVR for lender given current flags and asset
 function p2GetMaxLVR(cfg, lvrCapPct) {
-  var maxLvr = cfg.maxLvr / 100;
-  // Global LVR cap override
-  if(lvrCapPct > 0 && lvrCapPct <= 100) maxLvr = Math.min(maxLvr, lvrCapPct / 100);
-  // LFR: BOQ capped at 60%
-  if(p2SelectedAsset==='lfr' && (cfg.id==='boq_ld' || cfg.id==='boq_fd')) maxLvr = Math.min(maxLvr, 0.60);
-  // Childcare: NAB and Westpac 50% LVR
-  if(p2SelectedAsset==='childcare' && cfg.id==='nab_ld') maxLvr = Math.min(maxLvr, 0.50);
-  if(p2SelectedAsset==='childcare' && cfg.id==='wbc_ld') maxLvr = Math.min(maxLvr, 0.50);
-  return maxLvr;
+  var lvr=cfg.maxLvr;
+  if(p2AssetType==='lfr'       && (cfg.id==='boq_ld'||cfg.id==='boq_fd')) lvr=Math.min(lvr,60);
+  if(p2AssetType==='childcare' && (cfg.id==='nab_ld'||cfg.id==='wbc_ld')) lvr=Math.min(lvr,50);
+  if(lvrCapPct>0) lvr=Math.min(lvr,lvrCapPct);
+  return lvr;
 }
 
-// Core feasibility check: can we buy at price P with this lender?
-function p2Feasible(price, cfg, funds, netYieldPct, annualRentOverride, lvrCapPct) {
-  var cc = p2CalcCC(price, cfg.valW && !(cfg.id==='cba_lo' && p2DevLeaseback));
-  var availableDeposit = funds - cc.total;
-  if(availableDeposit <= 0) return false;
-
-  var requiredLoan = price - availableDeposit;
-  if(requiredLoan <= 0) return true; // pure cash purchase, always feasible
-
-  // Macquarie: min $1M loan
-  if(cfg.id==='mac_ld' && requiredLoan < 1000000) return false;
-
-  // CBA ≤$1.5M tier: loan cap
-  if(cfg.id==='cba_lo' && requiredLoan > 1500000) return false;
-
-  // Westpac: >$3M loan → 65% LVR max
-  var maxLvr = p2GetMaxLVR(cfg, lvrCapPct);
-  if(cfg.id==='wbc_ld' && requiredLoan > 3000000) maxLvr = Math.min(maxLvr, 0.65);
-
-  // LVR constraint
-  if(requiredLoan > price * maxLvr) return false;
-
-  // ICR constraint
-  var params = p2GetAdjustedParams(cfg);
-  var netRent = annualRentOverride > 0 ? annualRentOverride : price * (netYieldPct / 100);
-  if(netRent <= 0) return false;
-  var effectiveRent = cfg.id === 'wbc_ld' ? netRent * 0.95 : netRent;
-  var assessmentRate = (params.rate + cfg.buf) / 100;
-  if(assessmentRate <= 0) return false;
-  var maxLoanICR = effectiveRent / (params.icr * assessmentRate);
-  if(requiredLoan > maxLoanICR) return false;
-
-  return true;
+function p2Feasible(price, cfg, funds, yieldPct, annualRent, lvrCapPct) {
+  var valWaive=cfg.valWaive&&!p2DevLeaseback;
+  var cc=p2CalcCC(price,valWaive);
+  var deposit=funds-cc.total;
+  if(deposit<=0) return false;
+  var loan=price-deposit;
+  if(loan<=0) return false;
+  if(cfg.id==='mac_ld'&&loan<1000000) return false;
+  var params=p2GetAdjustedParams(cfg);
+  var assessRate=(params.rate+cfg.buf)/100;
+  var netRent=annualRent>0?annualRent:price*yieldPct/100;
+  if(netRent<=0) return false;
+  var effRent=cfg.id==='wbc_ld'?netRent*0.95:netRent;
+  var maxByICR=effRent/(params.icr*assessRate);
+  var maxLvr=p2GetMaxLVR(cfg,lvrCapPct);
+  var maxByLVR=price*maxLvr/100;
+  if(cfg.id==='wbc_ld'&&loan>3000000) maxByLVR=Math.min(maxByLVR,price*0.65);
+  if(cfg.id==='cba_lo') maxByLVR=Math.min(maxByLVR,1500000);
+  return loan<=maxByICR&&loan<=maxByLVR;
 }
 
-// Binary search for max purchase price, round to nearest $10k
-function p2FindMaxPrice(cfg, funds, netYieldPct, annualRentOverride, lvrCapPct) {
-  if(p2IsExcluded(cfg.id)) return null;
-
-  // Quick feasibility check at a low price
-  if(!p2Feasible(250000, cfg, funds, netYieldPct, annualRentOverride, lvrCapPct)) return null;
-
-  var lo = 250000, hi = 50000000;
-  for(var i = 0; i < 60; i++) {
-    var mid = (lo + hi) / 2;
-    if(p2Feasible(mid, cfg, funds, netYieldPct, annualRentOverride, lvrCapPct)) lo = mid;
-    else hi = mid;
+// Binary search — converges to upper feasibility boundary
+function p2FindMaxPrice(cfg, funds, yieldPct, annualRent, lvrCapPct) {
+  if(p2IsExcluded(cfg)) return {id:cfg.id,name:cfg.name,excluded:true,feasible:false};
+  var lo=250000,hi=50000000,maxFP=0;
+  for(var i=0;i<60;i++){
+    var mid=Math.round((lo+hi)/2);
+    if(p2Feasible(mid,cfg,funds,yieldPct,annualRent,lvrCapPct)){maxFP=mid;lo=mid+1;}
+    else{hi=mid-1;}
   }
-
-  // Round down to nearest $10k
-  var maxP = Math.floor(lo / 10000) * 10000;
-  if(maxP < 250000) return null;
-
-  // Compute final metrics — single CC call covers both Macquarie check and result
-  var valWaived = cfg.valW && !(cfg.id==='cba_lo' && p2DevLeaseback);
-  var cc = p2CalcCC(maxP, valWaived);
-  var deposit = funds - cc.total;
-  var loan = Math.max(0, maxP - deposit);
-
-  // Exclude Macquarie if final loan is below its $1M minimum (cash-buy edge case)
-  if(cfg.id==='mac_ld' && loan < 1000000) return null;
-
-  var maxLvr = p2GetMaxLVR(cfg, lvrCapPct);
-  if(cfg.id==='wbc_ld' && loan > 3000000) maxLvr = Math.min(maxLvr, 0.65);
-
-  var lvr = maxP > 0 ? loan / maxP : 0;
-  var params = p2GetAdjustedParams(cfg);
-  var netRent = annualRentOverride > 0 ? annualRentOverride : maxP * (netYieldPct / 100);
-  var effectiveRent = cfg.id === 'wbc_ld' ? netRent * 0.95 : netRent;
-  var assessmentRatePct = params.rate + cfg.buf;
-  var assessmentRate    = assessmentRatePct / 100;
-
-  var monthlyRepayment = loan * (params.rate / 100) / 12;
-  var icrActual = loan > 0 && assessmentRate > 0 ? effectiveRent / (loan * assessmentRate) : 0;
-  var appFee = loan * (cfg.app / 100);
-
-  // Binding constraint
-  var lvrMaxLoan = maxP * maxLvr;
-  var constraint = loan >= lvrMaxLoan * 0.99 ? 'LVR' : 'ICR';
-
+  maxFP=Math.round(maxFP/10000)*10000;
+  if(maxFP===0) return {id:cfg.id,name:cfg.name,excluded:false,feasible:false};
+  var valWaive=cfg.valWaive&&!p2DevLeaseback;
+  var cc=p2CalcCC(maxFP,valWaive);
+  var deposit=funds-cc.total;
+  var loan=maxFP-deposit;
+  var lvr=loan/maxFP*100;
+  var params=p2GetAdjustedParams(cfg);
+  var netRent=annualRent>0?annualRent:maxFP*yieldPct/100;
+  var effRent=cfg.id==='wbc_ld'?netRent*0.95:netRent;
+  var assessRate=(params.rate+cfg.buf)/100;
+  var icrActual=(loan>0&&assessRate>0)?effRent/(loan*assessRate):0;
   return {
-    id: cfg.id,
-    name: cfg.name,
-    maxP: maxP,
-    loan: loan,
-    lvr: lvr,
-    cc: cc.total,
-    ccBreak: cc,
-    appFee: appFee,
-    appFeePct: cfg.app,
-    constraint: constraint,
-    netRent: netRent,
-    monthlyRepayment: monthlyRepayment,
-    rate: params.rate,
-    assessmentRatePct: assessmentRatePct,
-    icr: params.icr,
-    icrActual: icrActual,
-    buf: cfg.buf,
-    valWaived: valWaived,
-    excluded: false
+    id:cfg.id,name:cfg.name,excluded:false,feasible:true,
+    maxP:maxFP,loan:loan,deposit:deposit,cc:cc,lvr:lvr,
+    rate:params.rate,buf:cfg.buf,assessRate:params.rate+cfg.buf,
+    icr:params.icr,icrActual:icrActual,
+    monthlyIO:loan*params.rate/100/12,
+    appFee:loan*cfg.app/100,valWaive:valWaive
   };
 }
 
-// Run all lenders and return array of results (null = excluded/infeasible)
-function p2RunAll(funds, netYieldPct, annualRentOverride, lvrCapPct) {
-  return P2_LENDERS.map(function(lDef) {
-    var cfg = p2GetLenderConfig(lDef.id);
-    if(p2IsExcluded(lDef.id)) return { id:lDef.id, name:lDef.name, excluded:true };
-    return p2FindMaxPrice(cfg, funds, netYieldPct, annualRentOverride, lvrCapPct);
+function p2RunAll(funds, yieldPct, annualRent, lvrCapPct) {
+  var results=P2_LENDERS.map(function(base){
+    var cfg=p2GetLenderConfig(base.id);
+    return cfg?p2FindMaxPrice(cfg,funds,yieldPct,annualRent,lvrCapPct):{id:base.id,name:base.name,excluded:false,feasible:false};
   });
+  var feasible=results.filter(function(r){return r.feasible;});
+  if(!feasible.length) return {results:results,winner:null,cheapest:null};
+  var winner =feasible.reduce(function(a,b){return a.maxP>=b.maxP?a:b;});
+  var byRate  =feasible.reduce(function(a,b){return a.rate<=b.rate?a:b;});
+  var cheapest=byRate.id!==winner.id?byRate:null; // null when winner is also cheapest
+  return {results:results,winner:winner,cheapest:cheapest};
 }
 
-// Theoretical maximum purchase price at a given LVR — no ICR check, no asset/yield input needed.
-// Uses commercial CC (no val waiver) as a conservative estimate.
+// Equity-only ceiling (no ICR) at given LVR — binary search
 function p2CalcTheoreticalMax(funds, lvrPct) {
-  if(!selectedState || !funds || lvrPct <= 0 || lvrPct >= 100) return 0;
-  var lvr = lvrPct / 100;
-  var lo = 0, hi = 50000000;
-  for(var i = 0; i < 60; i++) {
-    var mid = (lo + hi) / 2;
-    var cc = p2CalcCC(mid, false);
-    // equity needed = deposit + CC = price*(1-lvr) + CC
-    if(mid * (1 - lvr) + cc.total <= funds) lo = mid;
-    else hi = mid;
+  var lo=250000,hi=50000000,maxP=0;
+  for(var i=0;i<60;i++){
+    var mid=Math.round((lo+hi)/2);
+    var cc=p2CalcCC(mid,false);
+    if(funds>=mid*(1-lvrPct/100)+cc.total){maxP=mid;lo=mid+1;}
+    else{hi=mid-1;}
   }
-  return Math.floor(lo / 10000) * 10000;
+  return Math.round(maxP/10000)*10000;
 }
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     MODULE 8 — PHASE 2: UI + MAIN CALC
-═══════════════════════════════════════════════════════════════ -->
+<!-- ============================================================
+     MODULE 11 — PHASE 2 UI & RENDERING
+     Toggles, calc trigger, result HTML, sort, copy
+     ============================================================ -->
 <script>
-// ── Phase 2 input toggles ──────────────────────────────────────
-function toggleRentOverride() {
-  p2RentOverride = !p2RentOverride;
-  var trk = document.getElementById('p2RentTrack');
-  trk.className = 'toggle-track' + (p2RentOverride ? ' on' : '');
-  document.getElementById('p2RentRow').style.display = p2RentOverride ? 'block' : 'none';
-  var lbl = document.getElementById('p2YieldLabel');
-  if(lbl) lbl.textContent = p2RentOverride ? 'Net Yield % (overridden)' : 'Net Yield %';
-  var hint = document.getElementById('p2YieldHint');
-  if(hint) hint.textContent = p2RentOverride ? 'Actual annual rent is being used for ICR serviceability' : 'Annual net rent ÷ purchase price × 100';
-  p2Calc();
+function fmtM(n){ return '$'+Math.round(n).toLocaleString('en-AU'); }
+
+function p2ShowEmpty(msg) {
+  document.getElementById('p2ResultsSection').innerHTML=
+    '<div class="card"><div class="alert info"><span class="alert-icon">\u2139\ufe0f</span><span>'+msg+'</span></div></div>';
 }
 
 function toggleWale() {
-  p2WaleBelow2 = !p2WaleBelow2;
-  var trk = document.getElementById('p2WaleTrack');
-  trk.className = 'toggle-track' + (p2WaleBelow2 ? ' on' : '');
-  p2UpdateAssumptionsExclusions();
+  p2WaleToggle=!p2WaleToggle;
+  document.getElementById('p2waleTrack').className='toggle-track'+(p2WaleToggle?' on':'');
   p2Calc();
 }
-
-function toggleDevLB() {
-  p2DevLeaseback = !p2DevLeaseback;
-  var trk = document.getElementById('p2DevLBTrack');
-  trk.className = 'toggle-track' + (p2DevLeaseback ? ' on' : '');
-  p2UpdateAssumptionsExclusions();
+function toggleDevLeaseback() {
+  p2DevLeaseback=!p2DevLeaseback;
+  document.getElementById('p2dlTrack').className='toggle-track'+(p2DevLeaseback?' on':'');
   p2Calc();
 }
-
-function toggleAssumptions() {
-  var body = document.getElementById('p2AssumptionsBody');
-  var arrow = document.getElementById('p2AssumpArrow');
-  var hdr = document.getElementById('p2AssumpHdr');
-  var hint = hdr ? hdr.querySelector('span:last-child') : null;
-  var isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : 'block';
-  arrow.className = 'collapsible-arrow' + (isOpen ? '' : ' open');
-  hdr.className = 'collapsible-hdr' + (isOpen ? '' : ' open');
-  if(hint) hint.textContent = isOpen ? 'click to expand' : 'click to collapse';
+function toggleYieldMode() {
+  p2YieldMode=p2YieldMode==='pct'?'rent':'pct';
+  var isPct=p2YieldMode==='pct';
+  document.getElementById('p2ymTrack').className='toggle-track'+(isPct?'':' on');
+  document.getElementById('p2yieldWrap').style.display=isPct?'':'none';
+  document.getElementById('p2rentWrap').style.display =isPct?'none':'';
+  document.getElementById('p2yieldHint').textContent  =isPct?'Annual net rent as % of purchase price':'Total annual net rental income';
+  p2Calc();
+}
+function toggleAssume() {
+  var panel=document.getElementById('assumePanel'),chev=document.getElementById('assumeChev');
+  if(!panel) return;
+  var open=panel.style.display!=='none';
+  panel.style.display=open?'none':'block';
+  if(chev) chev.classList.toggle('ftc-chev-closed',open);
+}
+function p2ToggleCC() {
+  var row=document.getElementById('p2ccDetail'),chev=document.getElementById('p2ccChev');
+  if(!row) return;
+  var open=row.style.display!=='none';
+  row.style.display=open?'none':'';
+  if(chev) chev.classList.toggle('ftc-chev-closed',open);
 }
 
-// ── Phase 2 input listeners ────────────────────────────────────
-document.getElementById('p2Funds').addEventListener('input', function(e) {
-  var raw = e.target.value.replace(/[^0-9]/g,'');
-  e.target.value = raw ? Number(raw).toLocaleString('en-AU') : '';
-  p2Calc();
-});
-document.getElementById('p2Yield').addEventListener('input', p2Calc);
-document.getElementById('p2Rent').addEventListener('input', function(e) {
-  var raw = e.target.value.replace(/[^0-9]/g,'');
-  e.target.value = raw ? Number(raw).toLocaleString('en-AU') : '';
-  p2Calc();
-});
-document.getElementById('p2LVRCap').addEventListener('input', function(e) {
-  var raw = e.target.value.replace(/[^0-9]/g,'');
-  e.target.value = raw || '';
-  p2Calc();
-});
-
-// ── Format helpers ─────────────────────────────────────────────
-function p2fmt(n){ return '$'+Math.round(n).toLocaleString('en-AU'); }
-function p2fmtR(n,d){ return '$'+n.toLocaleString('en-AU',{minimumFractionDigits:d||2,maximumFractionDigits:d||2}); }
-
-// ── Main Phase 2 calc ─────────────────────────────────────────
 function p2Calc() {
-  // Show/hide residential note
-  var isComm = propType === 'commercial';
-  document.getElementById('p2ResiNote').style.display = isComm ? 'none' : 'block';
-  document.getElementById('p2CommercialInputs').style.display = isComm ? 'block' : 'none';
-  if(!isComm) return;
-  if(!selectedState) { p2ShowEmpty('Select a state above to begin'); return; }
-
-  var funds = Number(document.getElementById('p2Funds').value.replace(/[^0-9]/g,''));
-  var yieldPct = parseFloat(document.getElementById('p2Yield').value) || 0;
-  var annualRent = p2RentOverride ? Number(document.getElementById('p2Rent').value.replace(/[^0-9]/g,'')) : 0;
-  var lvrCapPct = Number(document.getElementById('p2LVRCap').value.replace(/[^0-9]/g,''));
-
-  if(!funds) { p2ShowEmpty('Enter available funds to calculate maximum borrowing'); return; }
-  if(!yieldPct && !annualRent) { p2ShowEmpty('Enter net yield % or actual annual rent'); return; }
-
-  // Run engine
-  var results = p2RunAll(funds, yieldPct, annualRent, lvrCapPct);
-
-  // Find valid results
-  var valid = results.filter(function(r){ return r && !r.excluded && r.maxP > 0; });
-  if(!valid.length) {
-    p2ShowEmpty('No lenders can service this scenario — check your funds and yield inputs');
-    return;
+  if(propType!=='commercial'){p2ShowEmpty('Phase 2 calculates maximum borrowing for <strong>commercial property</strong> only \u2014 switch to Commercial above.');return;}
+  if(!selectedState){p2ShowEmpty('Select a state above to begin.');return;}
+  var funds=getVal('p2funds');
+  if(!funds){p2ShowEmpty('Enter available funds to calculate.');return;}
+  var yieldPct=0,annualRent=0;
+  if(p2YieldMode==='pct'){
+    yieldPct=parseFloat(document.getElementById('p2yield').value)||0;
+    if(!yieldPct){p2ShowEmpty('Enter a net yield % to calculate.');return;}
+  } else {
+    annualRent=getVal('p2rent');
+    if(!annualRent){p2ShowEmpty('Enter the annual net rent to calculate.');return;}
   }
-
-  // 🏆 Max Borrowing = highest purchase price
-  var winner = valid.reduce(function(a,b){ return b.maxP > a.maxP ? b : a; });
-  // 💰 Cheapest = lowest actual lending rate
-  var cheapest = valid.reduce(function(a,b){ return b.rate < a.rate ? b : a; });
-
-  // Store for copy function
-  lastP2Results = { results:results, winner:winner, cheapest:cheapest, funds:funds,
-    yieldPct:yieldPct, annualRent:annualRent, lvrCapPct:lvrCapPct };
-
-  // Render results
-  p2RenderResults(results, winner, cheapest, funds);
+  var lvrCap=parseFloat(document.getElementById('p2lvrcap').value)||0;
+  var run=p2RunAll(funds,yieldPct,annualRent,lvrCap);
+  lastP2Results={results:run.results,winner:run.winner,cheapest:run.cheapest,funds:funds,yieldPct:yieldPct,annualRent:annualRent,lvrCapPct:lvrCap};
+  p2RenderResults(run,funds,yieldPct,annualRent,lvrCap);
 }
 
-function p2ShowEmpty(msg) {
-  document.getElementById('p2ResultsSection').innerHTML =
-    '<div class="card empty-state"><div class="icon">💰</div><p>'+msg+'</p></div>';
-}
+function p2RenderCompareTable(winner, cheapest) {
+  var twoCol=!!cheapest;
+  function cell(v){ return '<td class="c-val">'+v+'</td>'; }
+  function row(lbl,v1,v2){ return '<tr><td class="c-lbl">'+lbl+'</td>'+cell(v1)+(twoCol?cell(v2||'\u2014'):'')+' </tr>'; }
+  function mF(r,k){ return r?fmtM(r[k]):'\u2014'; }
+  function pF(r,k){ return r?r[k].toFixed(2)+'%':'\u2014'; }
 
-function p2RenderResults(results, winner, cheapest, funds) {
-  var isSame = winner.id === cheapest.id;
+  var hdr='<thead><tr>'+
+    '<th style="width:26%"></th>'+
+    '<th class="c-head" style="width:'+(twoCol?'37':'74')+'%">&#127942; '+(twoCol?'MAX BORROWING':'MAX BORROWING &nbsp; &#128176; LOWEST RATE')+
+    '<span class="cmp-lname">'+(winner?winner.name:'\u2014')+'</span></th>'+
+    (twoCol?'<th class="c-head" style="width:37%">&#128176; LOWEST RATE<span class="cmp-lname">'+(cheapest?cheapest.name:'\u2014')+'</span></th>':'')+
+    '</tr></thead>';
 
-  // Helper for constraint badge
-  function cBadge(c) {
-    return c==='LVR'
-      ? '<span class="constraint-badge c-lvr">LVR Cap</span>'
-      : '<span class="constraint-badge c-icr">ICR Limit</span>';
-  }
+  var ccDetail='<tr id="p2ccDetail" style="display:none"><td colspan="'+(twoCol?3:2)+'" style="padding:2px 0 8px 0">'+
+    '<table style="width:100%;font-size:12px">'+
+    '<tr><td style="padding:3px 0 3px 26px;color:#64748b">Govt Charges</td>'+cell(winner?fmtM(winner.cc.govt):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.govt):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">Conveyancing</td>'+cell(winner?fmtM(winner.cc.conv):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.conv):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">Valuation</td>'+
+    cell(winner?(winner.valWaive?'<span class="p2-waived">Waived</span>':fmtM(winner.cc.val)):'\u2014')+
+    (twoCol?cell(cheapest?(cheapest.valWaive?'<span class="p2-waived">Waived</span>':fmtM(cheapest.cc.val)):'\u2014'):'')+
+    '</tr></table></td></tr>';
 
-  // Build 2-column comparison table
-  var wCls = 'col-win', cCls = 'col-cheap';
-  var compareHTML =
-    '<div class="compare-wrap">'+
-    '<table class="compare-table">'+
-    '<colgroup><col class="c-label"><col class="c-data"><col class="c-data"></colgroup>'+
-    '<thead><tr>'+
-    '<th></th>'+
-    '<th class="'+wCls+'">🏆 Max Borrowing<br><span style="font-size:11px;font-weight:500;text-transform:none;color:#93c5fd">'+winner.name+'</span></th>'+
-    '<th class="'+cCls+'">'+(isSame?'💰 Lowest Rate (same)':'💰 Lowest Rate')+'<br><span style="font-size:11px;font-weight:500;text-transform:none;color:#86efac">'+cheapest.name+'</span></th>'+
-    '</tr></thead>'+
-    '<tbody>'+
-    p2Row('Max Purchase Price',
-      '<span class="hero">'+p2fmt(winner.maxP)+'</span>',
-      '<span class="hero">'+p2fmt(cheapest.maxP)+'</span>',
-      wCls, cCls)+
-    p2Row('Max Loan (LVR %)',
-      p2fmt(winner.loan)+' <span style="font-size:11px;color:#93c5fd">('+Math.round(winner.lvr*100)+'%)</span>',
-      p2fmt(cheapest.loan)+' <span style="font-size:11px;color:#86efac">('+Math.round(cheapest.lvr*100)+'%)</span>',
-      wCls, cCls)+
-    p2Row('Closing Costs <button onclick="toggleCCBreak()" id="ccBreakBtn" style="background:none;border:none;cursor:pointer;font-size:10px;color:#64748b;padding:0 0 0 4px;vertical-align:middle">▸ detail</button>',
-      p2fmt(winner.cc), p2fmt(cheapest.cc), wCls, cCls)+
-    '<tr id="ccBreakRow" style="display:none">'+
-      '<td style="font-size:11px;color:#64748b;padding-left:12px;line-height:1.8">Govt Charges<br>Conveyancing<br>Valuation</td>'+
-      '<td class="'+wCls+'" style="font-size:11px;line-height:1.8">'+
-        p2fmt(winner.ccBreak.stamp+winner.ccBreak.transfer+winner.ccBreak.mortg)+'<br>'+
-        p2fmt(winner.ccBreak.conv)+'<br>'+
-        (winner.valWaived ? '<span style="color:#6ee7b7">Waived</span>' : p2fmt(winner.ccBreak.val))+
-      '</td>'+
-      '<td class="'+cCls+'" style="font-size:11px;line-height:1.8">'+
-        p2fmt(cheapest.ccBreak.stamp+cheapest.ccBreak.transfer+cheapest.ccBreak.mortg)+'<br>'+
-        p2fmt(cheapest.ccBreak.conv)+'<br>'+
-        (cheapest.valWaived ? '<span style="color:#6ee7b7">Waived</span>' : p2fmt(cheapest.ccBreak.val))+
-      '</td>'+
-    '</tr>'+
-    p2Row('App Fee (% of loan)',
-      p2fmtR(winner.appFee)+' <span style="font-size:11px">('+winner.appFeePct.toFixed(2)+'%)</span>',
-      p2fmtR(cheapest.appFee)+' <span style="font-size:11px">('+cheapest.appFeePct.toFixed(2)+'%)</span>',
-      wCls, cCls)+
-    '<tr class="divider-row"><td colspan="3"></td></tr>'+
-    p2Row('Constraint', cBadge(winner.constraint), cBadge(cheapest.constraint), wCls, cCls)+
-    p2Row('Annual Net Rent',
-      p2fmt(winner.netRent), p2fmt(cheapest.netRent), wCls, cCls)+
-    p2Row('Monthly Repayment (IO)',
-      '<strong>'+p2fmtR(winner.monthlyRepayment)+'</strong>',
-      '<strong>'+p2fmtR(cheapest.monthlyRepayment)+'</strong>',
-      wCls, cCls)+
-    p2Row('Actual Rate',
-      winner.rate.toFixed(2)+'%'+(winner.buf>0?' <span style="font-size:11px;color:#64748b">+'+winner.buf.toFixed(2)+'% buf → '+winner.assessmentRatePct.toFixed(2)+'% assessed</span>':''),
-      cheapest.rate.toFixed(2)+'%'+(cheapest.buf>0?' <span style="font-size:11px;color:#64748b">+'+cheapest.buf.toFixed(2)+'% buf → '+cheapest.assessmentRatePct.toFixed(2)+'% assessed</span>':''),
-      wCls, cCls)+
-    p2Row('ICR (at assessment rate)',
-      winner.icrActual.toFixed(2)+'× <span style="font-size:11px">(min '+winner.icr.toFixed(2)+'×)</span>',
-      cheapest.icrActual.toFixed(2)+'× <span style="font-size:11px">(min '+cheapest.icr.toFixed(2)+'×)</span>',
-      wCls, cCls)+
-    '</tbody></table></div>';
+  var body='<tbody>'+
+    row('Max Purchase Price', mF(winner,'maxP'), mF(cheapest,'maxP'))+
+    row('Max Loan',           mF(winner,'loan'), mF(cheapest,'loan'))+
+    row('Deposit',            mF(winner,'deposit'), mF(cheapest,'deposit'))+
+    row('LVR', winner?winner.lvr.toFixed(1)+'%':'\u2014', cheapest?cheapest.lvr.toFixed(1)+'%':'\u2014')+
+    '<tr><td class="c-lbl" onclick="p2ToggleCC()" style="cursor:pointer">'+
+      '<span id="p2ccChev" class="ftc-chevron ftc-chev-closed" style="margin-right:6px">&#9660;</span>Closing Costs</td>'+
+      cell(winner?fmtM(winner.cc.total):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.total):'\u2014'):'')+
+    '</tr>'+ccDetail+
+    row('Rate (Actual)',    pF(winner,'rate'), pF(cheapest,'rate'))+
+    row('Assessment Rate', winner?winner.assessRate.toFixed(2)+'%':'\u2014', cheapest?cheapest.assessRate.toFixed(2)+'%':'\u2014')+
+    row('ICR Required',    winner?winner.icr.toFixed(2)+'\xd7':'\u2014', cheapest?cheapest.icr.toFixed(2)+'\xd7':'\u2014')+
+    row('ICR Achieved',    winner?winner.icrActual.toFixed(2)+'\xd7':'\u2014', cheapest?cheapest.icrActual.toFixed(2)+'\xd7':'\u2014')+
+    row('Monthly IO',      winner?fmtM(winner.monthlyIO)+'/mo':'\u2014', cheapest?fmtM(cheapest.monthlyIO)+'/mo':'\u2014')+
+    row('App Fee',         winner?fmtM(winner.appFee):'\u2014', cheapest?fmtM(cheapest.appFee):'\u2014')+
+    '</tbody>';
 
-  // Assumptions recap alerts
-  var alertsHTML = '';
-  if(p2WaleBelow2) alertsHTML += '<div class="alert warning"><span class="alert-icon">⚠️</span><span><strong>WALE &lt; 2 years active:</strong> BOQ rate +0.60%. Westpac Leasedoc excluded.</span></div>';
-  if(p2DevLeaseback) alertsHTML += '<div class="alert warning"><span class="alert-icon">⚠️</span><span><strong>Developer Leaseback active:</strong> BOQ Leasedoc excluded. CBA ≤$1.5M valuation fee waiver does not apply.</span></div>';
-  if(p2SelectedAsset==='lfr') alertsHTML += '<div class="alert info"><span class="alert-icon">ℹ️</span><span><strong>LFR asset:</strong> BOQ Leasedoc and Full Doc capped at 60% LVR.</span></div>';
-  if(p2SelectedAsset==='childcare') alertsHTML += '<div class="alert info"><span class="alert-icon">ℹ️</span><span><strong>Childcare asset:</strong> NAB and Westpac capped at 50% LVR. NAB standard ICR 1.50× applies (not Office/Retail 2.0×).</span></div>';
-  if(p2SelectedAsset==='office'||p2SelectedAsset==='retail') alertsHTML += '<div class="alert warning"><span class="alert-icon">⚠️</span><span><strong>'+p2SelectedAsset.charAt(0).toUpperCase()+p2SelectedAsset.slice(1)+' asset:</strong> NAB ICR increases to 2.0× (lower serviceability).</span></div>';
-
-  var disclaimer =
-    '<div class="card"><div class="disclaimer">'+
-    '<strong>Indicative only:</strong> Results are based on user-entered rate assumptions and standard policy rules. Actual lender approvals depend on full credit assessment, individual security, borrower profile, and current policy. Obtain credit advice before transacting.<br><br>'+
-    '<strong>Rate adjustments:</strong> Enter actual lending rates directly. BOQ +0.60% WALE premium applied automatically when active. NAB ICR increases to 2.0× for Office/Retail assets.<br><br>'+
-    '<strong>Closing costs</strong> use Phase 1 commercial formulas (stamp duty, transfer, mortgage reg, conveyancing, valuation). Val fee waived where shown. App fee shown separately — typically capitalisable into loan.<br><br>'+
-    '<strong>2026 rates.</strong> Policy rules sourced from product disclosures. Always verify with lender before submitting.'+
-    '</div></div>';
-
-  // ── Theoretical maximum at 70% LVR (or user LVR cap if lower) ──
-  var lpr = lastP2Results;
-  var theorLvr = lpr ? Math.min(70, lpr.lvrCapPct || 70) : 70;
-  var theorMax = p2CalcTheoreticalMax(funds, theorLvr);
-  var theorBar = theorMax > 0
-    ? '<div class="theor-max-bar">'+
-      '<span class="theor-max-label">Theoretical ceiling · '+theorLvr+'% LVR</span>'+
-      '<span class="theor-max-value">'+p2fmt(theorMax)+'</span>'+
-      '<span class="theor-max-note">Max purchase if equity-only approved at '+theorLvr+'% LVR — no income test applied</span>'+
-      '</div>'
-    : '';
-
-  // Build all-lenders summary (sorted, with sortable headers)
-  var allLendersHTML =
-    '<div class="card">'+
-    '<div class="card-title collapsible-hdr open" id="p2AllLendersHdr" onclick="toggleAllLenders()">'+
-    '<span class="collapsible-arrow open" id="p2AllLendersArrow">▶</span>'+
-    ' All Lenders'+
-    '</div>'+
-    '<div id="p2AllLendersBody">'+
-    '<table class="all-lenders-table">'+
-    '<thead><tr>'+
-    p2SortTh('',       '',              false)+
-    p2SortTh('maxP',   'Max Purchase',  true)+
-    p2SortTh('loan',   'Loan',          true)+
-    p2SortTh('lvr',    'LVR',           true)+
-    p2SortTh('monthlyRepayment','Monthly IO',true)+
-    p2SortTh('rate',   'Actual Rate',   true)+
-    p2SortTh('constraint','Constraint', true)+
-    '</tr></thead>'+
-    '<tbody id="p2AllLendersTbody">'+p2BuildAllLendersRows()+'</tbody>'+
-    '</table>'+
-    '</div></div>';
-
-  document.getElementById('p2ResultsSection').innerHTML =
-    '<div class="card">'+
-    '<div class="card-title" style="margin-bottom:4px">Max Loan Results</div>'+
-    '<p style="font-size:12px;color:#64748b;margin-bottom:12px">'+selectedState+' · Commercial · '+
-    P2_ASSETS.find(function(a){return a.id===p2SelectedAsset;}).label+
-    ' · <strong style="color:#f1f5f9">'+p2fmt(funds)+'</strong> available funds'+
-    (lpr && lpr.lvrCapPct ? ' · <span style="background:#1c1700;border:1px solid #d97706;color:#fcd34d;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">LVR CAP '+lpr.lvrCapPct+'%</span>' : '')+
-    '</p>'+
-    theorBar+
-    compareHTML+
-    alertsHTML+
-    '<div class="export-btns"><button class="export-btn" id="p2CopyBtn" onclick="p2CopyTable()">Copy Summary</button><button class="export-btn" onclick="window.print()">Print / Save PDF</button></div>'+
-    '</div>'+
-    allLendersHTML+
-    disclaimer;
-}
-
-function p2Row(label, wVal, cVal, wCls, cCls) {
-  return '<tr>'+
-    '<td>'+label+'</td>'+
-    '<td class="'+wCls+'">'+wVal+'</td>'+
-    '<td class="'+cCls+'">'+cVal+'</td>'+
-    '</tr>';
-}
-
-// ── All-lenders table helpers ──────────────────────────────────
-function p2SortTh(col, label, sortable) {
-  if(!sortable) return '<th>'+label+'</th>';
-  var isActive = p2SortCol === col;
-  var arrow = p2SortDir === -1 ? '▼' : '▲';
-  return '<th class="sortable r'+(isActive?' sort-active':'')+'" onclick="p2SortTable(\''+col+'\')">'+
-    label+'<span class="sort-arrow">'+(isActive?arrow:'↕')+'</span>'+
-    '</th>';
+  return '<table class="cmp-table">'+hdr+body+'</table>';
 }
 
 function p2BuildAllLendersRows() {
   if(!lastP2Results) return '';
-  var d = lastP2Results;
-  var winner = d.winner, cheapest = d.cheapest;
-  var isSame = winner.id === cheapest.id;
-
-  // Separate feasible, infeasible, excluded for sort
-  var feasible  = d.results.filter(function(r){ return r && !r.excluded && r.maxP > 0; });
-  var infeasible = d.results.filter(function(r){ return r && !r.excluded && !r.maxP; });
-  var excluded  = d.results.filter(function(r){ return r && r.excluded; });
-
-  // Sort feasible rows by current sort state
-  feasible.sort(function(a, b) {
-    if(p2SortCol==='constraint') {
-      var av=a.constraint, bv=b.constraint;
-      return p2SortDir === -1 ? (av<bv?-1:av>bv?1:0) : (av>bv?-1:av<bv?1:0);
-    }
-    var av=a[p2SortCol]||0, bv=b[p2SortCol]||0;
-    return p2SortDir === -1 ? bv-av : av-bv;
+  var rows=lastP2Results.results.slice();
+  rows.sort(function(a,b){
+    var ta=a.excluded?2:(a.feasible?0:1), tb=b.excluded?2:(b.feasible?0:1);
+    if(ta!==tb) return ta-tb;
+    if(a.feasible&&b.feasible){ var va=a[p2SortCol]||0,vb=b[p2SortCol]||0; return p2SortDir==='desc'?vb-va:va-vb; }
+    return 0;
   });
-
-  var rows = '';
-  function buildRow(r) {
-    var isWin = r.id===winner.id;
-    var isChp = r.id===cheapest.id && !isSame;
-    var cls = isWin ? 'row-win' : (isChp ? 'row-cheap' : '');
-    var tag = isWin ? ' 🏆' : (isChp ? ' 💰' : '');
-    rows += '<tr class="'+cls+'">'+
-      '<td class="nm">'+r.name+tag+'</td>'+
-      '<td class="r">'+p2fmt(r.maxP)+'</td>'+
-      '<td class="r">'+p2fmt(r.loan)+'</td>'+
-      '<td class="r">'+Math.round(r.lvr*100)+'%</td>'+
-      '<td class="r">'+p2fmtR(r.monthlyRepayment)+'</td>'+
-      '<td class="r">'+r.rate.toFixed(2)+'%</td>'+
-      '<td class="r"><span class="constraint-badge '+(r.constraint==='LVR'?'c-lvr':'c-icr')+'">'+r.constraint+'</span></td>'+
+  var w=lastP2Results.winner, c=lastP2Results.cheapest;
+  return rows.map(function(r){
+    var isW=w&&r.id===w.id, isC=c&&r.id===c.id;
+    var badges=(isW?'<span class="p2-badge">&#127942;</span>':'')+(isC?'<span class="p2-badge">&#128176;</span>':'');
+    if(r.excluded) return '<tr class="p2-row-excluded"><td>'+r.name+'<span class="p2-excl-tag">excl.</span></td><td class="r" colspan="8" style="color:#475569">Excluded by policy</td></tr>';
+    if(!r.feasible) return '<tr class="p2-row-infeasible"><td>'+r.name+'</td><td class="r" colspan="8" style="color:#475569">Insufficient funds / yield</td></tr>';
+    return '<tr>'+
+      '<td>'+r.name+badges+'</td>'+
+      '<td class="r">'+fmtM(r.maxP)+'</td><td class="r">'+fmtM(r.loan)+'</td>'+
+      '<td class="r">'+r.lvr.toFixed(1)+'%</td>'+
+      '<td class="r">'+r.rate.toFixed(2)+'%</td><td class="r">'+r.assessRate.toFixed(2)+'%</td>'+
+      '<td class="r">'+r.icrActual.toFixed(2)+'\xd7</td>'+
+      '<td class="r">'+fmtM(r.monthlyIO)+'/mo</td>'+
+      '<td class="r">'+(r.valWaive?'<span class="p2-waived">Waived</span>':fmtM(r.cc.val))+'</td>'+
       '</tr>';
-  }
-  feasible.forEach(buildRow);
-  infeasible.forEach(function(r){
-    rows += '<tr><td class="nm">'+r.name+'</td><td colspan="6" style="font-size:11px;color:#475569;font-style:italic">Not feasible at current inputs</td></tr>';
-  });
-  excluded.forEach(function(r){
-    rows += '<tr class="row-excluded"><td class="nm">'+r.name+'</td>'+
-      '<td colspan="6" style="font-size:11px;color:#475569;font-style:italic">Excluded — '+
-      (r.id==='boq_ld'?'Developer leaseback policy':'WALE < 2 years policy')+'</td></tr>';
-  });
-  return rows;
+  }).join('');
 }
 
 function p2SortTable(col) {
-  if(p2SortCol === col) {
-    p2SortDir = -p2SortDir; // toggle direction
-  } else {
-    p2SortCol = col;
-    p2SortDir = col==='constraint' ? 1 : -1; // default numeric desc, string asc
-  }
-  // Rebuild tbody
-  var tbody = document.getElementById('p2AllLendersTbody');
-  if(tbody) tbody.innerHTML = p2BuildAllLendersRows();
-  // Rebuild thead to update sort indicators (find and replace thead row)
-  var table = tbody ? tbody.closest('table') : null;
-  if(table) {
-    var thead = table.querySelector('thead tr');
-    if(thead) thead.innerHTML =
-      p2SortTh('',       '',              false)+
-      p2SortTh('maxP',   'Max Purchase',  true)+
-      p2SortTh('loan',   'Loan',          true)+
-      p2SortTh('lvr',    'LVR',           true)+
-      p2SortTh('monthlyRepayment','Monthly IO',true)+
-      p2SortTh('rate',   'Actual Rate',   true)+
-      p2SortTh('constraint','Constraint', true);
-  }
+  p2SortDir=p2SortCol===col?(p2SortDir==='desc'?'asc':'desc'):'desc';
+  p2SortCol=col;
+  var tb=document.getElementById('p2AlTbody'); if(tb) tb.innerHTML=p2BuildAllLendersRows();
+  p2UpdateSortIndicators();
+}
+function p2UpdateSortIndicators() {
+  ['maxP','loan','lvr','rate','assessRate','icrActual'].forEach(function(col){
+    var th=document.getElementById('p2th_'+col); if(!th) return;
+    th.classList.toggle('sort-active',col===p2SortCol);
+    var arr=th.querySelector('.sort-arrow');
+    if(arr) arr.textContent=col===p2SortCol?(p2SortDir==='desc'?' \u2193':' \u2191'):'';
+  });
 }
 
-// ── Phase 2 copy summary (TSV — pastes cleanly into spreadsheets) ─
+function p2RenderResults(run, funds, yieldPct, annualRent, lvrCap) {
+  var winner=run.winner, cheapest=run.cheapest;
+  if(!winner){
+    document.getElementById('p2ResultsSection').innerHTML=
+      '<div class="card"><div class="alert warning"><span class="alert-icon">\u26a0\ufe0f</span>'+
+      '<span><strong>No feasible lender found.</strong> Try increasing available funds, checking yield assumptions, or reducing the LVR cap.</span></div></div>';
+    return;
+  }
+  var theoCap=p2CalcTheoreticalMax(funds,70);
+  var yieldDisp=annualRent>0?'Rent '+fmtM(annualRent)+' p.a.':(yieldPct+'% yield');
+  var html='';
+
+  // Theoretical max bar
+  html+='<div class="theor-bar">'+
+    '<div class="theor-label">Theoretical Ceiling — 70% LVR, equity only, no serviceability'+
+    '<div class="theor-sub">'+yieldDisp+(lvrCap>0?' &middot; LVR cap '+lvrCap+'%':'')+'</div></div>'+
+    '<div class="theor-value">'+fmtM(theoCap)+'</div></div>';
+
+  // Compare table
+  html+='<div class="card"><div class="card-title">Best Options Comparison</div>'+p2RenderCompareTable(winner,cheapest)+'</div>';
+
+  // All Lenders table
+  var alThead='<thead><tr>'+
+    '<th>Lender</th>'+
+    '<th class="r" id="p2th_maxP"      onclick="p2SortTable(\'maxP\')">Max Price<span class="sort-arrow sort-active"> \u2193</span></th>'+
+    '<th class="r" id="p2th_loan"      onclick="p2SortTable(\'loan\')">Loan<span class="sort-arrow"></span></th>'+
+    '<th class="r" id="p2th_lvr"       onclick="p2SortTable(\'lvr\')">LVR<span class="sort-arrow"></span></th>'+
+    '<th class="r" id="p2th_rate"      onclick="p2SortTable(\'rate\')">Rate<span class="sort-arrow"></span></th>'+
+    '<th class="r" id="p2th_assessRate" onclick="p2SortTable(\'assessRate\')">Assess<span class="sort-arrow"></span></th>'+
+    '<th class="r" id="p2th_icrActual" onclick="p2SortTable(\'icrActual\')">ICR<span class="sort-arrow"></span></th>'+
+    '<th class="r">Monthly IO</th><th class="r">Val</th>'+
+    '</tr></thead>';
+
+  html+='<div class="card">'+
+    '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>All Lenders</span>'+
+    '<button class="export-btn" style="width:auto;flex:none;padding:6px 14px;font-size:12px" onclick="p2CopyTable()">Copy Summary</button>'+
+    '</div>'+
+    '<div style="overflow-x:auto"><table class="al-table">'+alThead+
+    '<tbody id="p2AlTbody">'+p2BuildAllLendersRows()+'</tbody></table></div></div>';
+
+  html+='<div class="card"><div class="disclaimer">'+
+    '<strong>Phase 2 \u2014 Commercial Max Loan:</strong> Indicative only. Actual approval depends on full credit assessment, property location, tenant quality, lease terms and individual lender policy. Rates are user-configured in Lender Assumptions above.<br><br>'+
+    '<strong>Loan model:</strong> Available funds = deposit + closing costs. Loan = purchase price \u2212 deposit. Binary search finds the maximum feasible price rounded to nearest $10,000.<br><br>'+
+    '<strong>ICR:</strong> Net rent \u00f7 (loan \u00d7 assessment rate). Westpac uses 95% of net rent. Assessment rate = actual rate + buffer.<br><br>'+
+    '<strong>Policy caps:</strong> LFR \u2014 BOQ 60% LVR. Childcare \u2014 NAB &amp; Westpac 50% LVR. Westpac \u2014 65% LVR above $3M loan. CBA \u2264$1.5M \u2014 hard cap $1.5M loan. Macquarie \u2014 min $1M loan.'+
+    '</div></div>';
+
+  document.getElementById('p2ResultsSection').innerHTML=html;
+}
+
 function p2CopyTable() {
   if(!lastP2Results) return;
-  var d = lastP2Results;
-  var w = d.winner, c = d.cheapest;
-  var isSame = w.id === c.id;
-  var assetLabel = P2_ASSETS.find(function(a){return a.id===p2SelectedAsset;}).label;
-
-  function fa(n){ return '$'+(Math.round(n)||0).toLocaleString('en-AU'); }
-  var T = '\t', N = '\n';
-  var rows = [];
-  function fmt2(n){ return '$'+n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-
-  // Header — one field per row for clean reading
-  rows.push(['MAX LOAN ANALYSIS']);
-  rows.push(['State', selectedState]);
-  rows.push(['Asset', assetLabel]);
-  rows.push(['Available Funds', fa(d.funds)]);
-  if(d.annualRent > 0) rows.push(['Annual Net Rent', fa(d.annualRent)]);
-  else                  rows.push(['Net Yield', d.yieldPct+'%']);
-  if(d.lvrCapPct)       rows.push(['LVR Cap Override', d.lvrCapPct+'%']);
-  if(p2WaleBelow2)      rows.push(['Flag', 'WALE < 2 years active']);
-  if(p2DevLeaseback)    rows.push(['Flag', 'Developer Leaseback active']);
-  rows.push([]);
-
-  // Comparison columns — no icons, clean labels
-  rows.push(['', 'MAX BORROWING', isSame ? '(same lender)' : 'LOWEST RATE']);
-  rows.push(['Lender', w.name, isSame ? '' : c.name]);
-  rows.push(['Max Purchase Price', fa(w.maxP), fa(c.maxP)]);
-  rows.push(['Max Loan', fa(w.loan), fa(c.loan)]);
-  rows.push(['LVR', Math.round(w.lvr*100)+'%', Math.round(c.lvr*100)+'%']);
-  rows.push(['Closing Costs', fa(w.cc), fa(c.cc)]);
-  rows.push(['  Govt Charges', fa(w.ccBreak.stamp+w.ccBreak.transfer+w.ccBreak.mortg), fa(c.ccBreak.stamp+c.ccBreak.transfer+c.ccBreak.mortg)]);
-  rows.push(['  Conveyancing', fa(w.ccBreak.conv), fa(c.ccBreak.conv)]);
-  rows.push(['  Valuation', w.valWaived?'Waived':fa(w.ccBreak.val), c.valWaived?'Waived':fa(c.ccBreak.val)]);
-  rows.push(['Application Fee', fa(w.appFee), fa(c.appFee)]);
-  rows.push([]);
-  rows.push(['Constraint', w.constraint==='LVR'?'LVR Cap':'ICR Limit', c.constraint==='LVR'?'LVR Cap':'ICR Limit']);
-  rows.push(['Annual Net Rent', fa(w.netRent), fa(c.netRent)]);
-  rows.push(['Monthly Repayment (IO)', fmt2(w.monthlyRepayment), fmt2(c.monthlyRepayment)]);
-  rows.push(['Actual Rate', w.rate.toFixed(2)+'%', c.rate.toFixed(2)+'%']);
-  rows.push(['ICR (at assessment rate)', w.icrActual.toFixed(2)+'x', c.icrActual.toFixed(2)+'x']);
-  rows.push([]);
-
-  // All lenders — sorted by max purchase desc, no /mo, no icons
-  rows.push(['ALL LENDERS']);
-  rows.push(['Lender', 'Max Purchase', 'Loan', 'LVR', 'Monthly IO', 'Actual Rate', 'Constraint']);
-
-  var feasible  = d.results.filter(function(r){ return r && !r.excluded && r.maxP > 0; });
-  var infeasible = d.results.filter(function(r){ return r && !r.excluded && !r.maxP; });
-  var excluded  = d.results.filter(function(r){ return r && r.excluded; });
-  feasible.sort(function(a,b){ return b.maxP - a.maxP; });
-
-  feasible.forEach(function(r) {
-    var tag = r.id===w.id?' [MAX]':(r.id===c.id&&!isSame?' [CHEAP]':'');
-    rows.push([r.name+tag, fa(r.maxP), fa(r.loan), Math.round(r.lvr*100)+'%',
-      fmt2(r.monthlyRepayment), r.rate.toFixed(2)+'%', r.constraint==='LVR'?'LVR Cap':'ICR Limit']);
+  var r=lastP2Results,w=r.winner,c=r.cheapest;
+  function fA(n){ return '$'+Math.round(n).toLocaleString('en-AU'); }
+  function fa(n){ return n!=null?n.toFixed(2):'\u2014'; }
+  var lines=[];
+  lines.push('COMMERCIAL MAX LOAN \u2014 '+selectedState);
+  lines.push('Asset: '+p2AssetType.toUpperCase()+' | Funds: '+fA(r.funds)+
+    (r.annualRent>0?' | Rent: '+fA(r.annualRent)+' p.a.':(r.yieldPct?' | Yield: '+r.yieldPct+'%':''))+
+    (p2WaleToggle?' | WALE <2yr':'')+(p2DevLeaseback?' | Dev Leaseback':'')+
+    (r.lvrCapPct>0?' | LVR Cap: '+r.lvrCapPct+'%':''));
+  lines.push('');
+  lines.push('\t'+(w?w.name:'\u2014')+(c?'\t'+c.name:''));
+  lines.push('Max Purchase Price\t'+(w?fA(w.maxP):'\u2014')+(c?'\t'+fA(c.maxP):''));
+  lines.push('Max Loan\t'+(w?fA(w.loan):'\u2014')+(c?'\t'+fA(c.loan):''));
+  lines.push('Deposit\t'+(w?fA(w.deposit):'\u2014')+(c?'\t'+fA(c.deposit):''));
+  lines.push('LVR\t'+(w?w.lvr.toFixed(1)+'%':'\u2014')+(c?'\t'+c.lvr.toFixed(1)+'%':''));
+  lines.push('Closing Costs\t'+(w?fA(w.cc.total):'\u2014')+(c?'\t'+fA(c.cc.total):''));
+  lines.push('  Govt Charges\t'+(w?fA(w.cc.govt):'\u2014')+(c?'\t'+fA(c.cc.govt):''));
+  lines.push('  Conveyancing\t'+(w?fA(w.cc.conv):'\u2014')+(c?'\t'+fA(c.cc.conv):''));
+  lines.push('  Valuation\t'+(w?(w.valWaive?'Waived':fA(w.cc.val)):'\u2014')+(c?'\t'+(c.valWaive?'Waived':fA(c.cc.val)):''));
+  lines.push('Rate (Actual)\t'+(w?fa(w.rate)+'%':'\u2014')+(c?'\t'+fa(c.rate)+'%':''));
+  lines.push('Assessment Rate\t'+(w?fa(w.assessRate)+'%':'\u2014')+(c?'\t'+fa(c.assessRate)+'%':''));
+  lines.push('ICR Required\t'+(w?fa(w.icr):'\u2014')+(c?'\t'+fa(c.icr):''));
+  lines.push('ICR Achieved\t'+(w?fa(w.icrActual):'\u2014')+(c?'\t'+fa(c.icrActual):''));
+  lines.push('Monthly IO\t'+(w?fA(w.monthlyIO):'\u2014')+(c?'\t'+fA(c.monthlyIO):''));
+  lines.push('App Fee\t'+(w?fA(w.appFee):'\u2014')+(c?'\t'+fA(c.appFee):''));
+  lines.push('');
+  lines.push('--- All Lenders ---');
+  lines.push('Lender\tMax Price\tLoan\tLVR\tRate\tAssess\tICR\tMonthly IO\tVal\tStatus');
+  r.results.forEach(function(lr){
+    if(lr.excluded) lines.push(lr.name+'\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\tExcluded');
+    else if(!lr.feasible) lines.push(lr.name+'\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\tInsufficient');
+    else lines.push(lr.name+'\t'+fA(lr.maxP)+'\t'+fA(lr.loan)+'\t'+lr.lvr.toFixed(1)+'%\t'+fa(lr.rate)+'%\t'+fa(lr.assessRate)+'%\t'+fa(lr.icrActual)+'\t'+fA(lr.monthlyIO)+'\t'+(lr.valWaive?'Waived':fA(lr.cc.val))+'\tFeasible');
   });
-  infeasible.forEach(function(r){ rows.push([r.name, 'Not feasible', '', '', '', '', '']); });
-  excluded.forEach(function(r){
-    rows.push([r.name, 'Excluded — '+(r.id==='boq_ld'?'Developer leaseback':'WALE < 2 years'), '', '', '', '', '']);
-  });
-  rows.push([]);
-  rows.push(['Indicative only. Based on assumed rates and standard lender policy rules. Not a credit approval.']);
-
-  var text = rows.map(function(r){ return r.join(T); }).join(N);
-  var btn = document.getElementById('p2CopyBtn');
-  function succeed() {
-    btn.textContent = 'Copied!';
-    btn.style.color='#10b981'; btn.style.borderColor='#10b981';
-    setTimeout(function(){ btn.textContent='Copy Summary'; btn.style.color=''; btn.style.borderColor=''; },2000);
-  }
-  if(navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(succeed).catch(function(){ p2FallbackCopy(text,succeed); });
-  } else { p2FallbackCopy(text,succeed); }
+  var text=lines.join('\n');
+  var btn=document.querySelector('[onclick="p2CopyTable()"]');
+  function ok(){ if(btn){btn.textContent='Copied!';btn.style.color='#10b981';setTimeout(function(){btn.textContent='Copy Summary';btn.style.color='';},2000);} }
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(ok).catch(function(){p2FallbackCopy(text,ok);}); }
+  else { p2FallbackCopy(text,ok); }
 }
-function p2FallbackCopy(text,cb) {
-  var ta=document.createElement('textarea'); ta.value=text;
-  ta.style.position='fixed'; ta.style.opacity='0';
-  document.body.appendChild(ta); ta.select();
+function p2FallbackCopy(text,cb){
+  var ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
   try{document.execCommand('copy');cb();}catch(e){}
   document.body.removeChild(ta);
 }
+</script>
 
-function toggleCCBreak() {
-  var row = document.getElementById('ccBreakRow');
-  var btn = document.getElementById('ccBreakBtn');
-  if(!row) return;
-  var isOpen = row.style.display !== 'none';
-  row.style.display = isOpen ? 'none' : '';
-  if(btn) btn.textContent = isOpen ? '▸ detail' : '▾ detail';
+<!-- ============================================================
+     MODULE 12 — INIT
+     calcAll defined first; state buttons, asset grid,
+     assumptions table, all event listeners
+     ============================================================ -->
+<script>
+// calcAll() must be defined before the IIFE runs.
+// setType() and state buttons reference it inside function bodies
+// (evaluated at call time, not parse time) so order is safe.
+function calcAll() {
+  calc();
+  if(typeof p2Calc==='function') p2Calc();
 }
 
-function toggleAllLenders() {
-  var body = document.getElementById('p2AllLendersBody');
-  var arrow = document.getElementById('p2AllLendersArrow');
-  var hdr = document.getElementById('p2AllLendersHdr');
-  if(!body) return;
-  var isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : '';
-  arrow.className = 'collapsible-arrow' + (isOpen ? '' : ' open');
-  hdr.className = 'card-title collapsible-hdr' + (isOpen ? '' : ' open');
+function switchTab(n) {
+  document.getElementById('tabPanel1').style.display=n===1?'':'none';
+  document.getElementById('tabPanel2').style.display=n===2?'':'none';
+  document.getElementById('tabBtn1').classList.toggle('active',n===1);
+  document.getElementById('tabBtn2').classList.toggle('active',n===2);
+  if(n===2) p2Calc();
 }
+
+(function init() {
+  // ── State buttons — call calcAll so both tabs refresh ──
+  var grid=document.getElementById('stateGrid');
+  STATES.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='state-btn'; b.textContent=s;
+    b.onclick=function(){
+      selectedState=s;
+      document.querySelectorAll('.state-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      calcAll();
+    };
+    grid.appendChild(b);
+  });
+
+  // ── Asset type buttons ─────────────────────────────────
+  var agrid=document.getElementById('assetGrid');
+  P2_ASSETS.forEach(function(a){
+    var b=document.createElement('button');
+    b.className='asset-btn'+(a.id===p2AssetType?' active':'');
+    b.textContent=a.label;
+    b.onclick=function(){
+      p2AssetType=a.id;
+      document.querySelectorAll('.asset-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      p2Calc();
+    };
+    agrid.appendChild(b);
+  });
+
+  // ── Build assumptions table ────────────────────────────
+  var tbl='<table class="assume-table"><thead><tr>'+
+    '<th>Lender</th><th class="r">Rate %</th><th class="r">Buffer %</th>'+
+    '<th class="r">Assess %</th><th class="r">ICR\xd7</th><th class="r">App %</th>'+
+    '<th class="r">Max LVR</th><th class="r">Val Waiver</th></tr></thead><tbody>';
+  P2_LENDERS.forEach(function(cfg){
+    tbl+='<tr>'+
+      '<td>'+cfg.name+'</td>'+
+      '<td class="r"><input class="assume-inp" id="p2r_'+cfg.id+'" type="number" step="0.01" value="'+cfg.rate+'" onchange="p2Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p2b_'+cfg.id+'" type="number" step="0.01" value="'+cfg.buf+'"  onchange="p2Calc()"></td>'+
+      '<td class="r" id="p2ar_'+cfg.id+'" style="color:#64748b">'+(cfg.rate+cfg.buf).toFixed(2)+'%</td>'+
+      '<td class="r"><input class="assume-inp" id="p2i_'+cfg.id+'" type="number" step="0.01" value="'+cfg.icr+'"  onchange="p2Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p2a_'+cfg.id+'" type="number" step="0.01" value="'+cfg.app+'"  onchange="p2Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p2l_'+cfg.id+'" type="number" step="1"    value="'+cfg.maxLvr+'" onchange="p2Calc()"></td>'+
+      '<td class="r">'+(cfg.valWaive?'\u2705':'\u2014')+'</td></tr>';
+  });
+  tbl+='</tbody></table>';
+  var wrap=document.getElementById('assumeTableWrap');
+  if(wrap) wrap.innerHTML=tbl;
+
+  // ── Phase 1 event listeners (unchanged from stable) ───
+  document.getElementById('price').addEventListener('input',function(e){fmtInp(e);calc();});
+  document.getElementById('loan').addEventListener('input',function(e){
+    fmtInp(e); loanManualOverride=!!e.target.value.replace(/[^0-9]/g,''); calc();
+  });
+  document.getElementById('convAmount').addEventListener('input',function(e){
+    fmtInp(e); conveyancingManualOverride=!!e.target.value.replace(/[^0-9]/g,''); calc();
+  });
+  document.getElementById('valAmount').addEventListener('input',function(e){
+    fmtInp(e); valuationManualOverride=!!e.target.value.replace(/[^0-9]/g,''); calc();
+  });
+  document.getElementById('baAmount').addEventListener('input',function(e){fmtInp(e);baManualOverride=true;calc();});
+  document.getElementById('bufAmount').addEventListener('input',function(e){
+    fmtInp(e); bufferManualOverride=!!e.target.value.replace(/[^0-9]/g,''); calc();
+  });
+
+  // ── Phase 2 event listeners ────────────────────────────
+  document.getElementById('p2funds').addEventListener('input',function(e){fmtInp(e);p2Calc();});
+  document.getElementById('p2yield').addEventListener('input',function(){p2Calc();});
+  document.getElementById('p2rent').addEventListener('input',function(e){fmtInp(e);p2Calc();});
+  document.getElementById('p2lvrcap').addEventListener('input',function(){p2Calc();});
+})();
 </script>
 
 </body>
 </html>
+
