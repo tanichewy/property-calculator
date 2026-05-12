@@ -188,8 +188,8 @@
   /* ── Mobile tab nav — dropdown on narrow screens ────────── */
   .tab-select{display:none;width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:13px;font-weight:600;padding:11px 14px;margin-bottom:20px;outline:none;cursor:pointer}
   @media(max-width:520px){
-    .tab-nav{display:none !important}
-    .tab-select{display:block}
+    .tab-nav{flex-wrap:wrap;gap:4px}
+    .tab-btn{flex:1 1 auto;min-width:0;font-size:11px;padding:9px 6px;white-space:nowrap}
   }
   /* ── Commercial-only tabs hidden in residential mode ────── */
   .tab-comm-only{display:none}
@@ -201,7 +201,7 @@
   .lvr-table th.sortable:hover{color:#93c5fd}
 
   @media print {
-    .no-print,.phase-banner,.export-btns,.tab-nav,.tab-select,#tabPanel2,#tabPanel3{display:none !important}
+    .no-print,.phase-banner,.export-btns,.tab-nav,#tabPanel2,#tabPanel3{display:none !important}
     body.print-tab2 #tabPanel1{display:none !important}
     body.print-tab2 #tabPanel2{display:block !important}
     body.print-tab3 #tabPanel1{display:none !important}
@@ -282,11 +282,6 @@
       <button class="type-btn" id="btnCom" onclick="setType('commercial')">&#127970; Commercial</button>
     </div>
   </div>
-
-  <!-- Mobile tab dropdown (shown only on narrow screens) -->
-  <select class="tab-select no-print" id="tabSelect" onchange="switchTab(parseInt(this.value))">
-    <option value="1">📊 Funds to Complete</option>
-  </select>
 
   <!-- TAB NAV -->
   <div class="tab-nav no-print">
@@ -1867,8 +1862,6 @@ function switchTab(n) {
   document.getElementById('tabBtn1').classList.toggle('active',n===1);
   document.getElementById('tabBtn2').classList.toggle('active',n===2);
   document.getElementById('tabBtn3').classList.toggle('active',n===3);
-  // Sync mobile select
-  var sel=document.getElementById('tabSelect'); if(sel) sel.value=n;
   // Print body class
   document.body.classList.toggle('print-tab2',n===2);
   document.body.classList.toggle('print-tab3',n===3);
@@ -1882,12 +1875,6 @@ function updateCommercialTabs() {
   document.querySelectorAll('.tab-comm-only').forEach(function(el){
     el.style.display=isComm?'block':'none';
   });
-  // Rebuild mobile select options
-  var sel=document.getElementById('tabSelect');
-  if(sel){
-    sel.innerHTML='<option value="1">📊 Funds to Complete</option>'+
-      (isComm?'<option value="2">🏢 Max Purchase (Commercial)</option><option value="3">🔍 Max LVR (Commercial)</option>':'');
-  }
   // If on a commercial tab but switched to residential, bounce back to tab 1
   var activeTab=document.getElementById('tabPanel2').style.display!=='none'?2:
                 document.getElementById('tabPanel3').style.display!=='none'?3:1;
