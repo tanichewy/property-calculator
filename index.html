@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AU Property Closing Costs — Phase 1</title>
+<title>Tanex Property Calculator — 2026</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
@@ -160,9 +160,53 @@
   .p2-waived{font-size:10px;background:#052e16;color:#86efac;border:1px solid #16a34a;border-radius:4px;padding:2px 5px;font-weight:700}
   .p2-excl-tag{font-size:10px;background:#1c1700;color:#fcd34d;border:1px solid #d97706;border-radius:4px;padding:2px 5px;font-weight:700;margin-left:4px}
   .p2-badge{font-size:12px;margin-left:3px}
+  /* ── Phase 3 LVR Lookup ─────────────────────────────────── */
+  .lvr-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+  .lvr-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:0 8px 12px 0;border-bottom:1px solid #334155;white-space:nowrap}
+  .lvr-table th.r{text-align:right}
+  .lvr-table td{padding:10px 8px 10px 0;border-bottom:0.5px solid #1e3a5f;color:#94a3b8;vertical-align:middle}
+  .lvr-table td.r{text-align:right;font-weight:600;color:#f1f5f9;white-space:nowrap}
+  .lvr-table tr:last-child td{border-bottom:none}
+  .lvr-table tr.p3-excl td{opacity:.4;font-style:italic}
+  .lvr-binding-icr{color:#f59e0b;font-weight:700}
+  .lvr-binding-pol{color:#38bdf8;font-weight:700}
+  .lvr-binding-both{color:#a78bfa;font-weight:700}
+  .lvr-bar-wrap{background:#0f172a;border-radius:4px;height:8px;width:100%;min-width:80px;overflow:hidden;display:inline-block;vertical-align:middle}
+  .lvr-bar-fill{height:8px;border-radius:4px}
+  .p3-hi-row{background:rgba(59,130,246,0.07)}
+  .p3-summary-bar{background:linear-gradient(135deg,#1e3a5f,#1e40af);border:1px solid #2563eb;border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .p3-summary-item{text-align:center}
+  .p3-summary-label{font-size:11px;color:#93c5fd;margin-bottom:4px}
+  .p3-summary-value{font-size:18px;font-weight:800;color:#fff}
+  .p3-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid #1e3a5f;font-size:11px}
+  .p3-legend-item{display:flex;align-items:center;gap:6px;color:#64748b}
+  .p3-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  /* ── Tooltip ────────────────────────────────────────────── */
+  .tip{position:relative;display:inline-block;cursor:help;border-bottom:1px dashed #475569}
+  .tip .tip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0f172a;border:1px solid #334155;border-radius:6px;padding:8px 10px;font-size:11px;color:#94a3b8;white-space:nowrap;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.5);pointer-events:none;line-height:1.5}
+  .tip:hover .tip-box{display:block}
+  /* ── Mobile tab nav — dropdown on narrow screens ────────── */
+  .tab-select{display:none;width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:13px;font-weight:600;padding:11px 14px;margin-bottom:20px;outline:none;cursor:pointer}
+  @media(max-width:520px){
+    .tab-nav{display:none !important}
+    .tab-select{display:block}
+  }
+  /* ── Commercial-only tabs hidden in residential mode ────── */
+  .tab-comm-only{display:none}
+  /* ── Print active tab button ────────────────────────────── */
+  .print-tab-btn{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .print-tab-btn:hover{border-color:#3b82f6;color:#3b82f6}
+  /* ── P3 sort ─────────────────────────────────────────────── */
+  .lvr-table th.sortable{cursor:pointer;user-select:none}
+  .lvr-table th.sortable:hover{color:#93c5fd}
 
   @media print {
-    .no-print,.phase-banner,.export-btns,.tab-nav,#tabPanel2{display:none !important}
+    .no-print,.phase-banner,.export-btns,.tab-nav,.tab-select,#tabPanel2,#tabPanel3{display:none !important}
+    body.print-tab2 #tabPanel1{display:none !important}
+    body.print-tab2 #tabPanel2{display:block !important}
+    body.print-tab3 #tabPanel1{display:none !important}
+    body.print-tab3 #tabPanel3{display:block !important}
+    .print-tab-btn{display:none !important}
     #tabPanel1{display:block !important}
     body{background:#fff !important;color:#000 !important}
     header{background:#fff !important;border-bottom:1px solid #ddd !important;padding:16px !important}
@@ -214,11 +258,13 @@
   <strong>PHASE 1 — CLOSING COSTS</strong> &nbsp;|&nbsp; Stamp Duty + Registration + Conveyancing + Valuation
   &nbsp;&nbsp;&#183;&nbsp;&nbsp;
   <strong>PHASE 2 — MAX LOAN</strong> &nbsp;|&nbsp; Commercial Serviceability Across 7 Lenders
+  &nbsp;&nbsp;&#183;&nbsp;&nbsp;
+  <strong>PHASE 3 — LVR LOOKUP</strong> &nbsp;|&nbsp; Max LVR by Yield Across All Lenders
 </div>
 
 <header>
   <div class="container" style="padding:0 16px">
-    <h1>&#127968; Australian Property Calculator <span id="typeBadge" class="badge badge-blue">INVESTOR</span></h1>
+    <h1>&#127968; Tanex Property Calculator <span id="typeBadge" class="badge badge-blue">INVESTOR</span> <span style="font-size:12px;font-weight:400;color:#475569;vertical-align:middle">v1.10</span></h1>
     <p>Closing costs &amp; maximum borrowing &mdash; 2026 rates, all states &amp; territories</p>
   </div>
 </header>
@@ -237,10 +283,16 @@
     </div>
   </div>
 
+  <!-- Mobile tab dropdown (shown only on narrow screens) -->
+  <select class="tab-select no-print" id="tabSelect" onchange="switchTab(parseInt(this.value))">
+    <option value="1">📊 Funds to Complete</option>
+  </select>
+
   <!-- TAB NAV -->
   <div class="tab-nav no-print">
-    <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">&#128202; Closing Costs</button>
-    <button class="tab-btn" id="tabBtn2" onclick="switchTab(2)">&#127970; Max Loan (Commercial)</button>
+    <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">&#128202; Funds to Complete</button>
+    <button class="tab-btn tab-comm-only" id="tabBtn2" onclick="switchTab(2)">&#127970; Max Purchase (Commercial)</button>
+    <button class="tab-btn tab-comm-only" id="tabBtn3" onclick="switchTab(3)">&#128269; Max LVR (Commercial)</button>
   </div>
 
   <!-- ═══ TAB 1 — PHASE 1 ═══ -->
@@ -304,6 +356,14 @@
         <input type="text" id="bufAmount" inputmode="numeric" placeholder="Auto: 5% of purchase price">
         <div class="field-hint" id="bufHint"></div>
       </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field" style="max-width:320px">
+      <label id="appFeeLabel">Application Fee <span style="color:#475569;font-weight:400">— edit to override</span></label>
+      <input type="text" id="appFeeAmount" inputmode="decimal" placeholder="Auto-calculated">
+      <div class="field-hint" id="appFeeHint"></div>
     </div>
   </div>
 
@@ -389,6 +449,70 @@
 
   </div><!-- /tabPanel2 -->
 
+  <!-- ═══ TAB 3 — PHASE 3: LVR LOOKUP ═══ -->
+  <div id="tabPanel3" style="display:none">
+
+  <div class="card no-print">
+    <div class="card-title">2. Property &amp; Yield Inputs</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Purchase Price</label>
+        <input type="text" id="p3price" inputmode="numeric" placeholder="e.g. 2,500,000" value="1,000,000">
+        <div class="field-hint">Used to calculate ICR-constrained LVR and loan metrics</div>
+      </div>
+      <div class="field">
+        <div id="p3yieldWrap">
+          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span></label>
+          <input type="text" id="p3yield" placeholder="e.g. 6.50" inputmode="decimal" value="5.50">
+        </div>
+        <div id="p3rentWrap" style="display:none">
+          <label>Annual Net Rent ($) <span style="color:#475569;font-weight:400">— toggle below for % yield</span></label>
+          <input type="text" id="p3rent" inputmode="numeric" placeholder="e.g. 150,000">
+        </div>
+        <div class="field-hint" id="p3yieldHint">Annual net rent as % of purchase price</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+      <label class="toggle-label" onclick="toggleP3YieldMode()">
+        <span class="toggle-track" id="p3ymTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Enter as annual net rent ($) instead</span>
+      </label>
+    </div>
+    <hr class="divider">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <label class="toggle-label" onclick="toggleP3Wale()">
+        <span class="toggle-track" id="p3waleTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE &lt; 2 Years &nbsp;<span class="est-tag">BOQ +0.60% rate penalty &middot; Westpac excluded</span></span>
+      </label>
+      <label class="toggle-label" onclick="toggleP3DevLeaseback()">
+        <span class="toggle-track" id="p3dlTrack"><span class="toggle-thumb"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">Developer Leaseback &nbsp;<span class="est-tag">BOQ Leasedoc excluded &middot; CBA val waiver removed</span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:0" onclick="toggleP3Assume()">
+      <span>Lender Assumptions &nbsp;<span class="est-tag">independent from Tab 2 — edit to override</span></span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="print-tab-btn" onclick="event.stopPropagation();p3ResetAssumptions()" style="font-size:11px;padding:4px 10px">Reset Defaults</button>
+        <span id="p3assumeChev" class="ftc-chevron ftc-chev-closed">&#9660;</span>
+      </div>
+    </div>
+    <div id="p3assumePanel" style="display:none;margin-top:16px">
+      <div class="assume-wrap" id="p3assumeTableWrap"></div>
+    </div>
+  </div>
+
+  <div id="p3ResultsSection">
+    <div class="card empty-state">
+      <div class="icon">&#128269;</div>
+      <p>Enter a purchase price and net yield to see the maximum LVR each lender will allow</p>
+    </div>
+  </div>
+
+  </div><!-- /tabPanel3 -->
+
 </div>
 
 <!-- ============================================================
@@ -407,6 +531,8 @@ let bufferEnabled       = false;
 let bufferManualOverride= false;
 let loanManualOverride  = false;
 let lastCalcResults     = null;
+let appFeeManualOverride= false;
+let appFeeMode          = 'flat'; // 'flat' or 'pct'
 // ── Phase 2 globals ───────────────────────────────────────
 let p2WaleToggle    = false;
 let p2DevLeaseback  = false;
@@ -415,6 +541,10 @@ let p2YieldMode     = 'pct';
 let lastP2Results   = null;
 let p2SortCol       = 'maxP';
 let p2SortDir       = 'desc';
+// ── Phase 3 globals ───────────────────────────────────────
+let p3YieldMode    = 'pct';
+let p3WaleToggle   = false;
+let p3DevLeaseback = false;
 </script>
 
 <!-- ============================================================
@@ -508,6 +638,24 @@ function calcBuyersAgency(price) {
 
 function calcBuffer(price) { return Math.round(price*0.05); }
 
+// App fee: resi default $500 flat; commercial default 0.50% of loan
+function calcAutoAppFee(loan) {
+  if(propType==='commercial') return Math.round(loan*0.005);
+  return 500;
+}
+
+// Parse app fee input — accepts '$500', '500', '0.5%', '.5%'
+function parseAppFeeInput(raw, loan) {
+  var s = raw.trim();
+  if(!s) return null;
+  if(s.indexOf('%') !== -1) {
+    var p = parseFloat(s);
+    return isNaN(p) ? null : Math.round(loan * p / 100);
+  }
+  var n = Number(s.replace(/[^0-9.]/g,''));
+  return isNaN(n) || n===0 ? null : Math.round(n);
+}
+
 function calcAutoLoan(price) {
   return Math.round(price * (propType==='commercial' ? 0.70 : 0.80));
 }
@@ -577,6 +725,7 @@ function setType(t) {
   valuationManualOverride = false;
   bufferManualOverride = false;
   loanManualOverride = false;
+  appFeeManualOverride = false;
   var isComm = t === 'commercial';
   document.getElementById('btnRes').className = 'type-btn' + (isComm ? '' : ' active-res');
   document.getElementById('btnCom').className = 'type-btn' + (isComm ? ' active-com' : '');
@@ -584,6 +733,7 @@ function setType(t) {
   badge.textContent = isComm ? 'COMMERCIAL' : 'INVESTOR';
   badge.className = 'badge ' + (isComm ? 'badge-green' : 'badge-blue');
   updateLoanLabel();
+  updateCommercialTabs();
   calcAll();
 }
 
@@ -708,8 +858,32 @@ function calc() {
     }
   }
 
-  var total=stamp+transfer+mortgage+conv+val+ba+buf;
+  // App fee
   var loan=getVal('loan')||autoLoan;
+  var autoAppFee=calcAutoAppFee(loan);
+  var appFeeInp=document.getElementById('appFeeAmount');
+  var appFeeHintEl=document.getElementById('appFeeHint');
+  var appFee=0;
+  if(appFeeManualOverride && appFeeInp) {
+    var parsed=parseAppFeeInput(appFeeInp.value, loan);
+    appFee = parsed!==null ? parsed : autoAppFee;
+  } else {
+    appFee = autoAppFee;
+    if(appFeeInp) appFeeInp.value = comm ? (0.5).toFixed(2)+'%' : '$500';
+  }
+  if(appFeeHintEl) {
+    if(appFeeManualOverride) {
+      appFeeHintEl.textContent = 'Auto: '+(comm?'0.50% of loan = '+fmt(autoAppFee):'$500 flat')+' (using your override)';
+    } else {
+      appFeeHintEl.textContent = comm ? '0.50% of loan = '+fmt(autoAppFee)+' — enter $ or % to override' : '$500 flat — enter $ or % to override';
+    }
+  }
+  if(appFeeInp && appFeeInp.getAttribute('data-label-set')!=='1') {
+    var lbl=document.getElementById('appFeeLabel');
+    if(lbl) appFeeInp.setAttribute('data-label-set','1');
+  }
+
+  var total=stamp+transfer+mortgage+conv+val+ba+buf+appFee;
   var isExempt=comm&&(selectedState==='SA'||(selectedState==='ACT'&&price<=2000000));
   var showXfer=transfer>0;
   var perHundred=(total/price*100).toFixed(2);
@@ -723,13 +897,14 @@ function calc() {
   lastCalcResults={
     state:selectedState, propType:propType, price:price,
     stamp:stamp, transfer:transfer, mortgage:mortgage,
-    conv:conv, val:val, ba:ba, buf:buf, total:total,
+    conv:conv, val:val, ba:ba, buf:buf, appFee:appFee, total:total,
     loan:loan, lmi:lmi, loanIncLMI:loanIncLMI,
     totalRequired:totalRequired, fundsRequired:fundsRequired, lvr:lvr,
     isExempt:isExempt, showXfer:showXfer,
     convO:conveyancingManualOverride, valO:valuationManualOverride,
     baO:baManualOverride, bufO:bufferManualOverride,
-    baEnabled:buyersAgencyEnabled, bufEnabled:bufferEnabled
+    baEnabled:buyersAgencyEnabled, bufEnabled:bufferEnabled,
+    appFeeO:appFeeManualOverride
   };
 
   // Build drill-down HTML
@@ -746,6 +921,7 @@ function calc() {
     tRow('#f43f5e','Valuation Fee',valuationManualOverride?'overridden':'est.',val,pct(val,total)+'%',false) +
     (ba>0 ? tRow('#10b981','Buyers Agency Fee','inc. GST'+(baManualOverride?' · overridden':''),ba,pct(ba,total)+'%',false) : '') +
     (buf>0 ? tRow('#6b7280','Contingency Buffer','planning cushion',buf,'-',false) : '') +
+    tRow('#818cf8','Application Fee',appFeeManualOverride?'overridden':(comm?'0.50% of loan':'$500 flat'),appFee,pct(appFee,total)+'%',false) +
     '</tbody></table>' +
     '<div class="total-row"><span class="total-label">TOTAL ESTIMATED CLOSING COSTS</span><span class="total-value">'+fmt(total)+'</span></div>' +
     '<p class="total-qualifier">* Government fees are fixed by law. Conveyancing, valuation and buyers agency fees are estimates — obtain quotes before settlement.</p>' +
@@ -830,6 +1006,7 @@ function calc() {
     '<strong>Government fees</strong> (stamp duty, transfer registration, mortgage registration) are fixed amounts per state legislation.<br>' +
     '<strong>Conveyancing, valuation and buyers agency fees</strong> are indicative estimates unless overridden. Buyers agency fee is inclusive of 10% GST. Valuation: residential $500 per million or part thereof; commercial $1,500 to $2,000 (under $1M) then $2,000 per million.<br>' +
     '<strong>Contingency buffer</strong> (if included) defaults to 5% of purchase price — a planning cushion only.<br>' +
+    '<strong>Application fee</strong> defaults to $500 flat (residential) or 0.50% of loan (commercial). Enter a dollar amount or percentage (e.g. "0.75%") to override.<br>' +
     '<strong>Base loan amount</strong> defaults to 80% LVR (residential) or 70% LVR (commercial) — edit to override.<br>' +
     '<strong>LMI estimate</strong> (residential only, LVR &gt; 80%): indicative only at 2% of purchase price (LVR 80–88%) or 4% (LVR &gt; 88%). Actual LMI is set by the insurer (Helia or QBE) and varies by lender — obtain a formal quote. LMI is capitalised into the loan and is not an upfront cash cost.<br><br>' +
     '<strong>Commercial:</strong> SA exempt (s.71DC). ACT exempt under $2M; flat 5% above $2M. WA general rate. NSW no premium rate above $3.721M. VIC CIPT after 10 years. QLD/TAS/NT same rates as residential.<br><br>' +
@@ -879,6 +1056,7 @@ function copyTable() {
   lines.push('  Valuation Fee (est.)\t'+fA(r.val));
   if(r.baEnabled) lines.push('  Buyers Agency Fee incl. GST (est.)\t'+fA(r.ba));
   if(r.bufEnabled) lines.push('  Contingency Buffer\t'+fA(r.buf));
+  lines.push('  Application Fee'+(r.appFeeO?' (overridden)':'')+'\t'+fA(r.appFee));
   lines.push(sep);
   lines.push('Total \u2014 Estimated Funds Required\t'+fA(r.fundsRequired));
   lines.push('');
@@ -1140,29 +1318,30 @@ function p2RenderCompareTable(winner, cheapest) {
     (twoCol?'<th class="c-head" style="width:37%">&#128176; LOWEST RATE<span class="cmp-lname">'+(cheapest?cheapest.name:'\u2014')+'</span></th>':'')+
     '</tr></thead>';
 
-  var ccDetail='<tr id="p2ccDetail" style="display:none"><td colspan="'+(twoCol?3:2)+'" style="padding:2px 0 8px 0">'+
+  var ftcDetail='<tr id="p2ccDetail" style="display:none"><td colspan="'+(twoCol?3:2)+'" style="padding:2px 0 8px 0">'+
     '<table style="width:100%;font-size:12px">'+
-    '<tr><td style="padding:3px 0 3px 26px;color:#64748b">Govt Charges</td>'+cell(winner?fmtM(winner.cc.govt):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.govt):'\u2014'):'')+
-    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">Conveyancing</td>'+cell(winner?fmtM(winner.cc.conv):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.conv):'\u2014'):'')+
-    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">Valuation</td>'+
+    '<tr><td style="padding:3px 0 3px 26px;color:#64748b">Closing Costs</td>'+cell(winner?fmtM(winner.cc.total):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.total):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">&#8627; Govt Charges</td>'+cell(winner?fmtM(winner.cc.govt):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.govt):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">&#8627; Conveyancing</td>'+cell(winner?fmtM(winner.cc.conv):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.conv):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">&#8627; Valuation</td>'+
     cell(winner?(winner.valWaive?'<span class="p2-waived">Waived</span>':fmtM(winner.cc.val)):'\u2014')+
     (twoCol?cell(cheapest?(cheapest.valWaive?'<span class="p2-waived">Waived</span>':fmtM(cheapest.cc.val)):'\u2014'):'')+
+    '</tr><tr><td style="padding:3px 0 3px 26px;color:#64748b">Deposit</td>'+cell(winner?fmtM(winner.deposit):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.deposit):'\u2014'):'')+
     '</tr></table></td></tr>';
 
   var body='<tbody>'+
     row('Max Purchase Price', mF(winner,'maxP'), mF(cheapest,'maxP'))+
     row('Max Loan',           mF(winner,'loan'), mF(cheapest,'loan'))+
-    row('Deposit',            mF(winner,'deposit'), mF(cheapest,'deposit'))+
     row('LVR', winner?winner.lvr.toFixed(1)+'%':'\u2014', cheapest?cheapest.lvr.toFixed(1)+'%':'\u2014')+
-    '<tr><td class="c-lbl" onclick="p2ToggleCC()" style="cursor:pointer">'+
-      '<span id="p2ccChev" class="ftc-chevron ftc-chev-closed" style="margin-right:6px">&#9660;</span>Closing Costs</td>'+
-      cell(winner?fmtM(winner.cc.total):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.cc.total):'\u2014'):'')+
-    '</tr>'+ccDetail+
     row('Rate (Actual)',    pF(winner,'rate'), pF(cheapest,'rate'))+
     row('Assessment Rate', winner?winner.assessRate.toFixed(2)+'%':'\u2014', cheapest?cheapest.assessRate.toFixed(2)+'%':'\u2014')+
     row('ICR Achieved',    winner?winner.icrActual.toFixed(2)+'\xd7':'\u2014', cheapest?cheapest.icrActual.toFixed(2)+'\xd7':'\u2014')+
     row('Monthly IO',      winner?fmtM(winner.monthlyIO):'\u2014', cheapest?fmtM(cheapest.monthlyIO):'\u2014')+
     row('App Fee',         winner?fmtM(winner.appFee)+' <span style="color:#64748b;font-size:11px">('+winner.appPct.toFixed(2)+'%)</span>':'\u2014', cheapest?fmtM(cheapest.appFee)+' <span style="color:#64748b;font-size:11px">('+cheapest.appPct.toFixed(2)+'%)</span>':'\u2014')+
+    '<tr><td class="c-lbl" onclick="p2ToggleCC()" style="cursor:pointer">'+
+      '<span id="p2ccChev" class="ftc-chevron ftc-chev-closed" style="margin-right:6px">&#9660;</span>Funds to Complete</td>'+
+      cell(winner?fmtM(winner.deposit+winner.cc.total):'\u2014')+(twoCol?cell(cheapest?fmtM(cheapest.deposit+cheapest.cc.total):'\u2014'):'')+
+    '</tr>'+ftcDetail+
     '</tbody>';
 
   return '<table class="cmp-table">'+hdr+body+'</table>';
@@ -1219,19 +1398,38 @@ function p2RenderResults(run, funds, yieldPct, annualRent, lvrCap) {
     return;
   }
   var theoCap=p2CalcTheoreticalMax(funds,70);
-  var yieldDisp=annualRent>0?'Rent '+fmtM(annualRent)+' p.a.':(yieldPct+'% yield');
+  // Min net yield needed for best lender to service 70% LVR at theoCap
+  // Derived from ICR formula: rent = ICR × assessRate × loan; loan = 70% × price
+  var theoYieldPct = null;
+  if(winner) {
+    var wCfg = p2GetLenderConfig(winner.id);
+    var wParams = p2GetAdjustedParams(wCfg);
+    var wAssess = (wParams.rate + wCfg.buf) / 100;
+    var wICR = wParams.icr;
+    // Westpac uses 95% of rent, so gross rent needed is higher
+    var rentFactor = winner.id==='wbc_ld' ? 1/0.95 : 1;
+    var minRent = wICR * wAssess * (theoCap * 0.70) * rentFactor;
+    theoYieldPct = Math.ceil((minRent / theoCap * 100) * 10) / 10; // round up to nearest 0.1%
+  }
+  var yieldNote = theoYieldPct !== null
+    ? '<div style="font-size:11px;color:#93c5fd;margin-top:6px">Min. net yield required: <strong style="color:#fff">'+theoYieldPct.toFixed(1)+'%</strong> <span style="color:#60a5fa;font-size:10px">('+winner.name+' ICR at 70% LVR)</span></div>'
+    : '';
+  var yieldDisp2 = annualRent>0 ? 'Rent '+fmtM(annualRent)+' p.a.' : (yieldPct+'% yield');
   var html='';
 
   // Theoretical max bar
   html+='<div class="theor-bar">'+
-    '<div class="theor-label"><strong style="color:#fff;font-size:13px">Max Purchase Price</strong><div style="font-size:11px;color:#60a5fa;margin-top:3px">Assuming max 70% LVR achievable</div></div>'+
+    '<div class="theor-label"><strong style="color:#fff;font-size:13px">Max Purchase Price</strong><div style="font-size:11px;color:#60a5fa;margin-top:3px">Assuming max 70% LVR achievable</div>'+yieldNote+'</div>'+
     '<div class="theor-value">'+fmtM(theoCap)+'</div></div>';
 
   // Compare table
   html+='<div class="card">'+
     '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">'+
     '<span>Loan Options Comparison</span>'+
+    '<div style="display:flex;gap:8px">'+
+    '<button class="print-tab-btn" onclick="printTab(2)">Print / Save PDF</button>'+
     '<button class="export-btn" style="width:auto;flex:none;padding:6px 14px;font-size:12px" onclick="p2CopyTable()">Copy Summary</button>'+
+    '</div>'+
     '</div>'+p2RenderCompareTable(winner,cheapest)+'</div>';
 
   // All Lenders table
@@ -1311,6 +1509,334 @@ function p2FallbackCopy(text,cb){
 </script>
 
 <!-- ============================================================
+     MODULE 13 — PHASE 3: LVR LOOKUP ENGINE & RENDERER
+     Independent lender assumptions (p3r_, p3b_, etc.)
+     Columns: ICR Max LVR, Constraint, Max Loan, Rate, Assess Rate,
+              ICR Achieved, Monthly IO, App Fee ($)
+     ============================================================ -->
+<script>
+// ── P3 lender config — reads from p3-prefixed inputs ─────
+function p3GetLenderConfig(id) {
+  var base=P2_LENDERS.filter(function(l){return l.id===id;})[0];
+  if(!base) return null;
+  function rn(elId,def){var el=document.getElementById(elId);if(!el)return def;var v=parseFloat(el.value);return isNaN(v)?def:v;}
+  return {
+    id:base.id, name:base.name,
+    rate:   rn('p3r_'+id, base.rate),
+    buf:    rn('p3b_'+id, base.buf),
+    icr:    rn('p3i_'+id, base.icr),
+    app:    rn('p3a_'+id, base.app),
+    maxLvr: rn('p3l_'+id, base.maxLvr),
+    valWaive: base.valWaive
+  };
+}
+
+// ── Toggles ──────────────────────────────────────────────
+function toggleP3YieldMode() {
+  p3YieldMode=p3YieldMode==='pct'?'rent':'pct';
+  var isPct=p3YieldMode==='pct';
+  document.getElementById('p3ymTrack').className='toggle-track'+(isPct?'':' on');
+  document.getElementById('p3yieldWrap').style.display=isPct?'':'none';
+  document.getElementById('p3rentWrap').style.display =isPct?'none':'';
+  document.getElementById('p3yieldHint').textContent  =isPct?'Annual net rent as % of purchase price':'Total annual net rental income';
+  p3Calc();
+}
+function toggleP3Wale() {
+  p3WaleToggle=!p3WaleToggle;
+  document.getElementById('p3waleTrack').className='toggle-track'+(p3WaleToggle?' on':'');
+  p3Calc();
+}
+function toggleP3DevLeaseback() {
+  p3DevLeaseback=!p3DevLeaseback;
+  document.getElementById('p3dlTrack').className='toggle-track'+(p3DevLeaseback?' on':'');
+  p3Calc();
+}
+function toggleP3Assume() {
+  var panel=document.getElementById('p3assumePanel'),chev=document.getElementById('p3assumeChev');
+  if(!panel) return;
+  var open=panel.style.display!=='none';
+  panel.style.display=open?'none':'block';
+  if(chev) chev.classList.toggle('ftc-chev-closed',open);
+}
+
+// ── Core LVR computation for one lender ──────────────────
+function p3CalcLenderLVR(cfg, price, netRent) {
+  var oldWale=p2WaleToggle,oldDL=p2DevLeaseback;
+  p2WaleToggle=p3WaleToggle; p2DevLeaseback=p3DevLeaseback;
+  var excluded    =p2IsExcluded(cfg);
+  var params      =p2GetAdjustedParams(cfg);
+  var policyMaxLvr=p2GetMaxLVR(cfg,0);
+  p2WaleToggle=oldWale; p2DevLeaseback=oldDL;
+
+  if(excluded) return {excluded:true};
+
+  var assessRate=(params.rate+cfg.buf)/100;
+  var effRent=cfg.id==='wbc_ld'?netRent*0.95:netRent;
+  var maxLoanICR=effRent/(params.icr*assessRate);
+  if(cfg.id==='cba_lo') maxLoanICR=Math.min(maxLoanICR,1500000);
+
+  var icrLvr    =Math.min((maxLoanICR/price)*100,100);
+  var bindingLvr=Math.min(icrLvr,policyMaxLvr);
+
+  var binding;
+  if(Math.abs(icrLvr-policyMaxLvr)<0.5) binding='both';
+  else if(icrLvr<policyMaxLvr)          binding='icr';
+  else                                   binding='policy';
+
+  var loan    =price*bindingLvr/100;
+  var feasible=bindingLvr>0&&loan>0;
+  if(cfg.id==='mac_ld'&&loan<1000000) feasible=false;
+
+  return {
+    excluded:false, feasible:feasible,
+    icrLvr:icrLvr, policyMaxLvr:policyMaxLvr,
+    bindingLvr:bindingLvr, binding:binding,
+    rate:params.rate, buf:cfg.buf, assessRate:params.rate+cfg.buf,
+    icr:params.icr,
+    icrActual:(loan>0&&assessRate>0)?effRent/(loan*assessRate):0,
+    loan:loan,
+    monthlyIO:loan*params.rate/100/12,
+    appFee:loan*cfg.app/100, appPct:cfg.app,
+    valWaive:cfg.valWaive&&!p3DevLeaseback
+  };
+}
+
+// ── Main calc ─────────────────────────────────────────────
+function p3Calc() {
+  var sec=document.getElementById('p3ResultsSection');
+  if(!sec) return;
+  if(propType!=='commercial'){
+    sec.innerHTML='<div class="card"><div class="alert info"><span class="alert-icon">\u2139\ufe0f</span><span>Max LVR is for <strong>commercial property</strong> only \u2014 switch to Commercial above.</span></div></div>';
+    return;
+  }
+  if(!selectedState){
+    sec.innerHTML='<div class="card"><div class="alert info"><span class="alert-icon">\u2139\ufe0f</span><span>Select a state above to begin.</span></div></div>';
+    return;
+  }
+  var price=getVal('p3price');
+  if(!price){sec.innerHTML='<div class="card empty-state"><div class="icon">&#128269;</div><p>Enter a purchase price and net yield to calculate</p></div>';return;}
+  var yPct=0;
+  var netRent=0;
+  if(p3YieldMode==='pct'){
+    yPct=parseFloat(document.getElementById('p3yield').value)||0;
+    if(!yPct){sec.innerHTML='<div class="card empty-state"><div class="icon">&#128269;</div><p>Enter a net yield % to calculate</p></div>';return;}
+    netRent=price*yPct/100;
+  } else {
+    netRent=getVal('p3rent');
+    if(!netRent){sec.innerHTML='<div class="card empty-state"><div class="icon">&#128269;</div><p>Enter the annual net rent to calculate</p></div>';return;}
+    yPct=netRent/price*100;
+  }
+
+  function calcRows(rentOverride){
+    return P2_LENDERS.map(function(base){
+      var cfg=p3GetLenderConfig(base.id);
+      if(!cfg) return {id:base.id,name:base.name,excluded:false,feasible:false};
+      var r=p3CalcLenderLVR(cfg,price,rentOverride);
+      r.id=base.id; r.name=base.name;
+      return r;
+    });
+  }
+
+  var rows=calcRows(netRent);
+
+  // Attach ccTotal (funds to complete = deposit + closing costs) for sortability
+  rows.forEach(function(r){
+    if(r.feasible){
+      var cc=p2CalcCC(price,r.valWaive);
+      r.ccTotal=(price-r.loan)+cc.total;
+      r.ccRaw=cc.total;
+    } else { r.ccTotal=0; r.ccRaw=0; }
+  });
+
+  // Sort: feasible first (by chosen col), then infeasible, then excluded
+  rows.sort(function(a,b){
+    var ta=a.excluded?2:(!a.feasible?1:0), tb=b.excluded?2:(!b.feasible?1:0);
+    if(ta!==tb) return ta-tb;
+    if(a.feasible&&b.feasible){
+      var va=a[p3SortCol]||0, vb=b[p3SortCol]||0;
+      return p3SortDir==='desc'?vb-va:va-vb;
+    }
+    return 0;
+  });
+
+  var feasible=rows.filter(function(r){return !r.excluded&&r.feasible;});
+  var best=feasible.length?feasible.reduce(function(a,b){return a.bindingLvr>=b.bindingLvr?a:b;}):null;
+  var lowestRate=feasible.length?feasible.reduce(function(a,b){return a.rate<=b.rate?a:b;}):null;
+
+  var fA=function(n){return '$'+Math.round(n).toLocaleString('en-AU');};
+  var html='';
+
+  // ── Summary bar ───────────────────────────────────────
+  if(best){
+    var yDisp=yPct.toFixed(2)+'%';
+    var bestCC=p2CalcCC(price,best.valWaive);
+    var bestFTC=(price-best.loan)+bestCC.total;
+    html+='<div class="p3-summary-bar">'+
+      '<div class="p3-summary-item"><div class="p3-summary-label">Highest Max LVR</div><div class="p3-summary-value">'+best.bindingLvr.toFixed(1)+'%</div></div>'+
+      '<div class="p3-summary-item"><div class="p3-summary-label">Best Lender</div><div class="p3-summary-value" style="font-size:14px;padding-top:4px">'+best.name+'</div></div>'+
+      '<div class="p3-summary-item"><div class="p3-summary-label">Net Yield</div><div class="p3-summary-value">'+yDisp+'</div></div>'+
+      '<div class="p3-summary-item"><div class="p3-summary-label">Max Loan @ Best LVR</div><div class="p3-summary-value">'+fA(best.loan)+'</div></div>'+
+      '<div class="p3-summary-item"><div class="p3-summary-label">Funds to Complete</div><div class="p3-summary-value">'+fA(bestFTC)+'</div></div>'+
+      '</div>';
+
+    // ── Rate sensitivity strip (best lender, ±0.10% / ±0.20%) ──
+    var rateDeltas=[-0.20,-0.10,0,0.10,0.20];
+    var sensHTML='<div style="margin-bottom:20px">'+
+      '<div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">'+
+      '&#128200; Rate Sensitivity &mdash; '+best.name+' &nbsp;<span style="color:#475569;font-weight:400;font-style:italic;text-transform:none;letter-spacing:0">Best lender rate shifted &plusmn;0.20%</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:0;flex-wrap:wrap;background:#0a1628;border:1px solid #1e3a5f;border-radius:10px;overflow:hidden">';
+    rateDeltas.forEach(function(delta){
+      var isBase=delta===0;
+      // Clone best lender config with shifted rate
+      var baseCfg=p3GetLenderConfig(best.id);
+      var shiftedCfg=JSON.parse(JSON.stringify(baseCfg));
+      shiftedCfg.rate=Math.max(0,baseCfg.rate+delta);
+      var sr=p3CalcLenderLVR(shiftedCfg,price,netRent);
+      var lvrDisp=sr.feasible?sr.bindingLvr.toFixed(1)+'%':'\u2014';
+      var rateDisp=(Math.max(0,baseCfg.rate+delta)).toFixed(2)+'%';
+      var col=isBase?'#fff':(delta<0?'#86efac':'#f87171'); // lower rate = green (better), higher = red
+      var bg=isBase?'rgba(59,130,246,0.15)':'transparent';
+      var label=isBase?'Current':(delta>0?'+'+delta.toFixed(2)+'%':delta.toFixed(2)+'%');
+      sensHTML+='<div style="flex:1;min-width:80px;padding:12px 8px;text-align:center;background:'+bg+';border-right:1px solid #1e3a5f">'+
+        '<div style="font-size:10px;color:#64748b;margin-bottom:4px">'+rateDisp+'</div>'+
+        '<div style="font-size:16px;font-weight:800;color:'+col+'">'+lvrDisp+'</div>'+
+        '<div style="font-size:10px;color:#475569;margin-top:3px">'+label+'</div>'+
+        '</div>';
+    });
+    sensHTML+='</div></div>';
+    html+=sensHTML;
+  }
+
+  // ── Main table ────────────────────────────────────────
+  function thSort(col,label){
+    var active=p3SortCol===col;
+    var arrow=active?(p3SortDir==='desc'?' \u2193':' \u2191'):'';
+    return '<th class="r sortable'+(active?' sort-active':'')+'" onclick="p3SortTable(\''+col+'\')">'+label+'<span class="sort-arrow">'+arrow+'</span></th>';
+  }
+
+  html+='<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'+
+    '<span>Max LVR by Lender</span>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    '<button class="print-tab-btn" onclick="printTab(3)">Print / Save PDF</button>'+
+    '<button class="export-btn" style="width:auto;flex:none;padding:6px 14px;font-size:12px" onclick="p3CopyTable()">Copy Table</button>'+
+    '</div></div>'+
+    '<div style="overflow-x:auto"><table class="lvr-table">'+
+    '<thead><tr>'+
+    '<th>Lender</th>'+
+    thSort('bindingLvr','Max LVR')+
+    '<th class="r sortable"><span class="tip">Constraint<span class="tip-box">ICR = yield is the binding limit<br>Policy = lender LVR cap is binding<br>Tied = both constraints coincide</span></span></th>'+
+    thSort('loan','Max Loan')+
+    thSort('ccTotal','Funds to Complete')+
+    thSort('rate','Rate')+
+    thSort('assessRate','Assess Rate')+
+    thSort('monthlyIO','Monthly IO')+
+    thSort('appFee','App Fee')+
+    '</tr></thead><tbody>';
+
+  rows.forEach(function(r){
+    var isBest =best&&r.id===best.id;
+    var isCheap=lowestRate&&r.id===lowestRate.id&&lowestRate.id!==(best?best.id:null);
+    var trClass=r.excluded?' class="p3-excl"':(isBest?' class="p3-hi-row"':'');
+    if(r.excluded){
+      html+='<tr'+trClass+'><td>'+r.name+' <span class="p2-excl-tag">excl.</span></td><td class="r" colspan="8" style="color:#475569">Excluded by policy</td></tr>';
+      return;
+    }
+    if(!r.feasible){
+      html+='<tr'+trClass+'><td>'+r.name+'</td><td class="r" colspan="8" style="color:#475569">Insufficient yield / min loan not met</td></tr>';
+      return;
+    }
+    // Closing costs already computed into r.ccTotal / r.ccRaw above
+    var bindLabel,bindClass;
+    if(r.binding==='icr')        {bindLabel='ICR';   bindClass='lvr-binding-icr';}
+    else if(r.binding==='policy'){bindLabel='Policy';bindClass='lvr-binding-pol';}
+    else                         {bindLabel='Tied';  bindClass='lvr-binding-both';}
+    var badges=(isBest?' &#127942;':'')+(isCheap?' &#128176;':'');
+    html+='<tr'+trClass+'>'+
+      '<td>'+r.name+badges+'</td>'+
+      '<td class="r" style="font-size:14px;font-weight:800;color:#fff">'+r.bindingLvr.toFixed(1)+'%</td>'+
+      '<td class="r"><span class="'+bindClass+'">'+bindLabel+'</span></td>'+
+      '<td class="r">'+fA(r.loan)+'</td>'+
+      '<td class="r">'+fA(r.ccTotal)+'</td>'+
+      '<td class="r">'+r.rate.toFixed(2)+'%</td>'+
+      '<td class="r">'+r.assessRate.toFixed(2)+'%</td>'+
+      '<td class="r">'+fA(r.monthlyIO)+'</td>'+
+      '<td class="r">'+fA(r.appFee)+'</td>'+
+      '</tr>';
+  });
+
+  html+='</tbody></table></div>'+
+    '<div class="p3-legend">'+
+    '<div class="p3-legend-item"><div class="p3-legend-dot" style="background:#f59e0b"></div>ICR binding \u2014 yield is the constraint; policy would allow more</div>'+
+    '<div class="p3-legend-item"><div class="p3-legend-dot" style="background:#38bdf8"></div>Policy binding \u2014 LVR cap is the constraint; ICR would allow more</div>'+
+    '<div class="p3-legend-item"><div class="p3-legend-dot" style="background:#a78bfa"></div>Tied \u2014 ICR and policy constraints coincide</div>'+
+    '</div></div>';
+
+  html+='<div class="card"><div class="disclaimer">'+
+    '<strong>Phase 3 \u2014 Max LVR:</strong> Shows the maximum LVR each lender will extend at the given purchase price and net yield, and identifies whether ICR serviceability or lender policy LVR cap is the binding constraint.<br><br>'+
+    '<strong>Max LVR</strong> = lower of ICR-constrained LVR (Net Rent \u00f7 ICR \u00d7 Assessment Rate \u00d7 Price) and the lender\u2019s policy cap.<br>'+
+    '<strong>Rate Sensitivity</strong> shows how the best lender\u2019s max LVR changes if their rate shifts by \u00b10.10% or \u00b10.20%.<br>'+
+    '<strong>Funds to Complete</strong> = deposit (purchase price minus max loan) + closing costs. Varies by lender where a valuation waiver applies.<br>'+
+    '<strong>Constraint</strong>: ICR = yield-limited; Policy = LVR cap-limited; Tied = both bind simultaneously.<br><br>'+
+    '<strong>Policy caps:</strong> LFR \u2014 BOQ 60%. Childcare \u2014 NAB &amp; Westpac 50%. Westpac 65% above $3M loan. CBA \u2264$1.5M hard cap. Macquarie min $1M loan. WALE &lt;2yr \u2014 BOQ +0.60% rate, Westpac excluded. Westpac ICR uses 95% of net rent.<br><br>'+
+    '<strong>Lender Assumptions</strong> in this tab are independent from Tab 2 \u2014 changes here do not affect Max Purchase calculations.'+
+    '</div></div>';
+
+  sec.innerHTML=html;
+}
+
+// ── Copy ──────────────────────────────────────────────────
+function p3CopyTable() {
+  var price=getVal('p3price'); if(!price) return;
+  var netRent=p3YieldMode==='pct'?price*(parseFloat(document.getElementById('p3yield').value)||0)/100:getVal('p3rent');
+  var fA=function(n){return '$'+Math.round(n).toLocaleString('en-AU');};
+  var lines=[];
+  lines.push('MAX LVR \u2014 '+(selectedState||'?')+' COMMERCIAL');
+  lines.push('Purchase Price: '+fA(price)+' | Net Rent: '+fA(netRent)+' p.a. ('+((netRent/price)*100).toFixed(2)+'% yield)'+
+    (p3WaleToggle?' | WALE <2yr':'')+(p3DevLeaseback?' | Dev Leaseback':''));
+  lines.push('');
+  lines.push('Lender\tMax LVR\tConstraint\tMax Loan\tFunds to Complete\tRate\tAssess Rate\tMonthly IO\tApp Fee');
+  P2_LENDERS.forEach(function(base){
+    var cfg=p3GetLenderConfig(base.id); if(!cfg) return;
+    var r=p3CalcLenderLVR(cfg,price,netRent); r.id=base.id;
+    if(r.excluded){lines.push(base.name+'\t\u2014\tExcluded\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014');return;}
+    if(!r.feasible){lines.push(base.name+'\t\u2014\tInsufficient\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014');return;}
+    var bind=r.binding==='icr'?'ICR':r.binding==='policy'?'Policy':'Tied';
+    var cc=p2CalcCC(price,r.valWaive);
+    var ftc=(price-r.loan)+cc.total;
+    lines.push(base.name+'\t'+r.bindingLvr.toFixed(1)+'%\t'+bind+'\t'+fA(r.loan)+'\t'+fA(ftc)+'\t'+r.rate.toFixed(2)+'%\t'+r.assessRate.toFixed(2)+'%\t'+fA(r.monthlyIO)+'\t'+fA(r.appFee));
+  });
+  var text=lines.join('\n');
+  var btn=document.querySelector('[onclick="p3CopyTable()"]');
+  function ok(){if(btn){btn.textContent='Copied!';btn.style.color='#10b981';setTimeout(function(){btn.textContent='Copy Table';btn.style.color='';},2000);}}
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(ok).catch(function(){p2FallbackCopy(text,ok);});}
+  else{p2FallbackCopy(text,ok);}
+}
+
+// ── Print active tab ──────────────────────────────────────
+function printTab(n) {
+  document.body.classList.remove('print-tab2','print-tab3');
+  if(n===2) document.body.classList.add('print-tab2');
+  if(n===3) document.body.classList.add('print-tab3');
+  window.print();
+  setTimeout(function(){document.body.classList.remove('print-tab2','print-tab3');},1000);
+}
+
+// ── Reset Tab 3 lender assumptions to defaults ────────────
+function p3ResetAssumptions() {
+  P2_LENDERS.forEach(function(cfg){
+    var r=document.getElementById('p3r_'+cfg.id); if(r) r.value=cfg.rate;
+    var b=document.getElementById('p3b_'+cfg.id); if(b) b.value=cfg.buf;
+    var i=document.getElementById('p3i_'+cfg.id); if(i) i.value=cfg.icr;
+    var a=document.getElementById('p3a_'+cfg.id); if(a) a.value=cfg.app;
+    var l=document.getElementById('p3l_'+cfg.id); if(l) l.value=cfg.maxLvr;
+    var ar=document.getElementById('p3ar_'+cfg.id); if(ar) ar.textContent=(cfg.rate+cfg.buf).toFixed(2)+'%';
+  });
+  p3Calc();
+}
+</script>
+
+<!-- ============================================================
      MODULE 12 — INIT
      calcAll defined first; state buttons, asset grid,
      assumptions table, all event listeners
@@ -1322,14 +1848,50 @@ function p2FallbackCopy(text,cb){
 function calcAll() {
   calc();
   if(typeof p2Calc==='function') p2Calc();
+  if(typeof p3Calc==='function') p3Calc();
+}
+
+// ── p3 sort state ─────────────────────────────────────────
+var p3SortCol='bindingLvr', p3SortDir='desc';
+
+function p3SortTable(col) {
+  p3SortDir = p3SortCol===col ? (p3SortDir==='desc'?'asc':'desc') : 'desc';
+  p3SortCol = col;
+  p3Calc();
 }
 
 function switchTab(n) {
   document.getElementById('tabPanel1').style.display=n===1?'':'none';
   document.getElementById('tabPanel2').style.display=n===2?'':'none';
+  document.getElementById('tabPanel3').style.display=n===3?'':'none';
   document.getElementById('tabBtn1').classList.toggle('active',n===1);
   document.getElementById('tabBtn2').classList.toggle('active',n===2);
+  document.getElementById('tabBtn3').classList.toggle('active',n===3);
+  // Sync mobile select
+  var sel=document.getElementById('tabSelect'); if(sel) sel.value=n;
+  // Print body class
+  document.body.classList.toggle('print-tab2',n===2);
+  document.body.classList.toggle('print-tab3',n===3);
   if(n===2) p2Calc();
+  if(n===3) p3Calc();
+}
+
+function updateCommercialTabs() {
+  var isComm=propType==='commercial';
+  // Show/hide tab buttons — must set explicit 'block' not '' to override CSS default
+  document.querySelectorAll('.tab-comm-only').forEach(function(el){
+    el.style.display=isComm?'block':'none';
+  });
+  // Rebuild mobile select options
+  var sel=document.getElementById('tabSelect');
+  if(sel){
+    sel.innerHTML='<option value="1">📊 Funds to Complete</option>'+
+      (isComm?'<option value="2">🏢 Max Purchase (Commercial)</option><option value="3">🔍 Max LVR (Commercial)</option>':'');
+  }
+  // If on a commercial tab but switched to residential, bounce back to tab 1
+  var activeTab=document.getElementById('tabPanel2').style.display!=='none'?2:
+                document.getElementById('tabPanel3').style.display!=='none'?3:1;
+  if(!isComm && activeTab>1) switchTab(1);
 }
 
 (function init() {
@@ -1346,6 +1908,16 @@ function switchTab(n) {
     };
     grid.appendChild(b);
   });
+
+  // ── NSW default state ──────────────────────────────────
+  selectedState='NSW';
+  // Find by text since buttons were just created without data-state
+  grid.querySelectorAll('.state-btn').forEach(function(b){
+    if(b.textContent==='NSW') b.classList.add('active');
+  });
+
+  // ── Initial commercial tab visibility ─────────────────
+  updateCommercialTabs();
 
   // ── Asset type buttons ─────────────────────────────────
   var agrid=document.getElementById('assetGrid');
@@ -1397,12 +1969,40 @@ function switchTab(n) {
   document.getElementById('bufAmount').addEventListener('input',function(e){
     fmtInp(e); bufferManualOverride=!!e.target.value.replace(/[^0-9]/g,''); calc();
   });
+  document.getElementById('appFeeAmount').addEventListener('input',function(e){
+    appFeeManualOverride=!!e.target.value.trim(); calc();
+  });
 
   // ── Phase 2 event listeners ────────────────────────────
   document.getElementById('p2funds').addEventListener('input',function(e){fmtInp(e);p2Calc();});
   document.getElementById('p2yield').addEventListener('input',function(){p2Calc();});
   document.getElementById('p2rent').addEventListener('input',function(e){fmtInp(e);p2Calc();});
   document.getElementById('p2lvrcap').addEventListener('input',function(){p2Calc();});
+
+  // ── Phase 3 event listeners ────────────────────────────
+  document.getElementById('p3price').addEventListener('input',function(e){fmtInp(e);p3Calc();});
+  document.getElementById('p3yield').addEventListener('input',function(){p3Calc();});
+  document.getElementById('p3rent').addEventListener('input',function(e){fmtInp(e);p3Calc();});
+
+  // ── Build Phase 3 assumptions table (independent IDs: p3r_, p3b_, etc.) ──
+  var tbl3='<table class="assume-table"><thead><tr>'+
+    '<th>Lender</th><th class="r">Rate %</th><th class="r">Buffer %</th>'+
+    '<th class="r">Assess %</th><th class="r">ICR\xd7</th><th class="r">App %</th>'+
+    '<th class="r">Max LVR</th><th class="r">Val Waiver</th></tr></thead><tbody>';
+  P2_LENDERS.forEach(function(cfg){
+    tbl3+='<tr>'+
+      '<td>'+cfg.name+'</td>'+
+      '<td class="r"><input class="assume-inp" id="p3r_'+cfg.id+'" type="number" step="0.01" value="'+cfg.rate+'" onchange="p3Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p3b_'+cfg.id+'" type="number" step="0.01" value="'+cfg.buf+'"  onchange="p3Calc()"></td>'+
+      '<td class="r" id="p3ar_'+cfg.id+'" style="color:#64748b">'+(cfg.rate+cfg.buf).toFixed(2)+'%</td>'+
+      '<td class="r"><input class="assume-inp" id="p3i_'+cfg.id+'" type="number" step="0.01" value="'+cfg.icr+'"  onchange="p3Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p3a_'+cfg.id+'" type="number" step="0.01" value="'+cfg.app+'"  onchange="p3Calc()"></td>'+
+      '<td class="r"><input class="assume-inp" id="p3l_'+cfg.id+'" type="number" step="1"    value="'+cfg.maxLvr+'" onchange="p3Calc()"></td>'+
+      '<td class="r">'+(cfg.valWaive?'\u2705':'\u2014')+'</td></tr>';
+  });
+  tbl3+='</tbody></table>';
+  var wrap3=document.getElementById('p3assumeTableWrap');
+  if(wrap3) wrap3.innerHTML=tbl3;
 })();
 </script>
 
