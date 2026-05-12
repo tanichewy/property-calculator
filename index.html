@@ -185,6 +185,10 @@
   .lmi-tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;font-size:9px;font-weight:700;cursor:help;flex-shrink:0;position:relative;vertical-align:middle;margin-left:4px}
   .lmi-tip .lmi-tip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0f172a;border:1px solid #334155;border-radius:6px;padding:8px 10px;font-size:11px;color:#94a3b8;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.5);pointer-events:none;line-height:1.6;width:220px;white-space:normal;font-style:normal;font-weight:400}
   .lmi-tip:hover .lmi-tip-box{display:block}
+  .gloss-tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#1e293b;border:1px solid #475569;color:#64748b;font-size:9px;font-weight:700;cursor:help;flex-shrink:0;position:relative;vertical-align:middle;margin-left:5px;transition:border-color .15s,color .15s}
+  .gloss-tip:hover{border-color:#93c5fd;color:#93c5fd}
+  .gloss-tip .gloss-tip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;font-size:11px;color:#94a3b8;z-index:99;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;line-height:1.7;width:240px;white-space:normal;font-style:normal;font-weight:400;text-transform:none;letter-spacing:0}
+  .gloss-tip:hover .gloss-tip-box{display:block}
   .tip{position:relative;display:inline-block;cursor:help;border-bottom:1px dashed #475569}
   .tip .tip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0f172a;border:1px solid #334155;border-radius:6px;padding:8px 10px;font-size:11px;color:#94a3b8;white-space:nowrap;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.5);pointer-events:none;line-height:1.5}
   .tip:hover .tip-box{display:block}
@@ -196,6 +200,19 @@
   }
   /* ── Commercial-only tabs hidden in residential mode ────── */
   .tab-comm-only{display:none}
+  /* ── Step flow indicators ───────────────────────────────── */
+  .step-wrap{position:relative;padding-left:0}
+  .step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1d4ed8;color:#fff;font-size:11px;font-weight:800;flex-shrink:0;margin-right:10px;vertical-align:middle}
+  .step-connector{display:flex;align-items:center;justify-content:center;height:24px;margin:-4px 0;position:relative;z-index:0}
+  .step-connector::before{content:'';display:block;width:2px;height:100%;background:linear-gradient(to bottom,#1d4ed855,transparent)}
+  /* ── State grid first-use pulse ─────────────────────────── */
+  @keyframes subtlePulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}50%{box-shadow:0 0 0 5px rgba(59,130,246,.25)}}
+  .state-grid-unset{animation:subtlePulse 2s ease-in-out infinite;border-radius:10px}
+  .state-grid-unset::after{content:'← Start here';display:block;font-size:11px;font-weight:600;color:#3b82f6;letter-spacing:.3px;margin-top:8px;text-align:left;opacity:.8}
+  /* ── Yield mode pill ────────────────────────────────────── */
+  .yield-mode-pill{display:inline-flex;background:#0f172a;border:1px solid #334155;border-radius:20px;overflow:hidden;vertical-align:middle}
+  .yield-mode-opt{font-size:11px;font-weight:700;padding:5px 14px;cursor:pointer;color:#64748b;transition:all .15s;user-select:none;letter-spacing:.3px}
+  .yield-mode-opt.active{background:#1d4ed8;color:#fff}
   /* ── App fee mode pill ──────────────────────────────────── */
   .fee-mode-pill{display:inline-flex;background:#0f172a;border:1px solid #334155;border-radius:20px;overflow:hidden;margin-left:8px;vertical-align:middle}
   .fee-mode-opt{font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;color:#64748b;transition:all .15s;user-select:none}
@@ -279,7 +296,7 @@
 
   <!-- SHARED CONTROLS — both tabs react via calcAll() -->
   <div class="card no-print">
-    <div class="card-title">1. Property Configuration</div>
+    <div class="card-title"><span class="step-badge">1</span>Property Configuration</div>
     <div class="state-grid" id="stateGrid"></div>
     <hr class="divider">
     <div class="section-label">Property Type</div>
@@ -299,18 +316,22 @@
   <!-- ═══ TAB 1 — PHASE 1 ═══ -->
   <div id="tabPanel1">
 
+  <div class="step-connector no-print"></div>
   <div class="card no-print">
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
-      <span>2. Property Details</span>
+      <span><span class="step-badge">2</span>Property Details</span>
       <button onclick="resetAll()" style="background:#0f172a;border:1px solid #334155;border-radius:8px;color:#64748b;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#f87171';this.style.color='#f87171'" onmouseout="this.style.borderColor='#334155';this.style.color='#64748b'">↺ Reset All</button>
     </div>
+    <p style="font-size:12px;color:#475569;margin:-4px 0 16px;line-height:1.5">Enter a purchase price to calculate stamp duty, registration fees, and all upfront costs — for any state or territory.</p>
     <div class="grid-2">
       <div class="field">
         <label>Property Purchase Price</label>
         <input type="text" id="price" placeholder="e.g. 600,000" inputmode="numeric">
       </div>
       <div class="field">
-        <label id="loanLabel">Base Loan Amount (excl. LMI) <span style="color:#475569;font-weight:400">— edit to override</span></label>
+        <label id="loanLabel">Base Loan Amount (excl. LMI) <span style="color:#475569;font-weight:400">— edit to override</span>
+          <span class="gloss-tip">?<span class="gloss-tip-box"><strong>LVR — Loan to Value Ratio</strong><br>The loan as a % of the property's purchase price.<br><br>Default is 80% LVR (standard residential investment). Lenders apply LMI above 80% LVR.</span></span>
+        </label>
         <input type="text" id="loan" inputmode="numeric" placeholder="Auto: 80% LVR">
         <div class="field-hint" id="loanHint"></div>
       </div>
@@ -365,12 +386,14 @@
     <hr class="divider">
 
     <div class="field" style="max-width:320px">
-      <label id="appFeeLabel">Application Fee
+      <label id="appFeeLabel">Application Fee</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Mode</span>
         <span class="fee-mode-pill">
           <span class="fee-mode-opt active" id="feeModeFlatBtn" onclick="setAppFeeMode('flat')">$ Flat</span>
           <span class="fee-mode-opt" id="feeModePctBtn" onclick="setAppFeeMode('pct')">% of Loan</span>
         </span>
-      </label>
+      </div>
       <input type="text" id="appFeeAmount" inputmode="decimal" placeholder="Auto-calculated">
       <div class="field-hint" id="appFeeHint"></div>
     </div>
@@ -390,7 +413,8 @@
   <div id="tabPanel2" style="display:none">
 
   <div class="card no-print">
-    <div class="card-title">2. Available Funds &amp; Yield</div>
+    <div class="card-title"><span class="step-badge">2</span>Available Funds &amp; Yield</div>
+    <p style="font-size:12px;color:#475569;margin:-4px 0 16px;line-height:1.5">Enter your total available capital and expected yield to find your maximum purchase price across all lenders.</p>
     <div class="grid-2">
       <div class="field">
         <label>Available Funds (Total Capital)</label>
@@ -399,21 +423,24 @@
       </div>
       <div class="field">
         <div id="p2yieldWrap">
-          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span></label>
+          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span>
+            <span class="gloss-tip">?<span class="gloss-tip-box"><strong>Net Yield</strong><br>Annual rent after all outgoings (vacancy, property management, rates, insurance, maintenance) ÷ purchase price × 100.<br><br>Use net — not gross — yield. Entering gross will overstate borrowing capacity.</span></span>
+          </label>
           <input type="text" id="p2yield" placeholder="e.g. 6.50" inputmode="decimal">
         </div>
         <div id="p2rentWrap" style="display:none">
           <label>Annual Net Rent ($) <span style="color:#475569;font-weight:400">— toggle below for % yield</span></label>
           <input type="text" id="p2rent" inputmode="numeric" placeholder="e.g. 65,000">
         </div>
-        <div class="field-hint" id="p2yieldHint">Annual net rent as % of purchase price</div>
+        <div class="field-hint" id="p2yieldHint">Net of vacancy, PM fees, rates &amp; insurance — not gross rent</div>
       </div>
     </div>
     <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
-      <label class="toggle-label" onclick="toggleYieldMode()">
-        <span class="toggle-track" id="p2ymTrack"><span class="toggle-thumb"></span></span>
-        <span style="font-size:13px;font-weight:600;color:#94a3b8">Enter as annual net rent ($) instead</span>
-      </label>
+      <span style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Input mode</span>
+      <span class="yield-mode-pill">
+        <span class="yield-mode-opt active" id="p2ymPctBtn" onclick="if(p2YieldMode!=='pct')toggleYieldMode()">% Yield</span>
+        <span class="yield-mode-opt" id="p2ymRentBtn" onclick="if(p2YieldMode!=='rent')toggleYieldMode()">$ Rent</span>
+      </span>
     </div>
     <hr class="divider">
     <div class="field" style="max-width:280px">
@@ -423,14 +450,17 @@
     </div>
   </div>
 
+  <div class="step-connector no-print"></div>
   <div class="card no-print">
-    <div class="card-title">3. Asset Type &amp; Policy</div>
+    <div class="card-title"><span class="step-badge">3</span>Asset Type &amp; Policy</div>
     <div class="section-label">Asset Type</div>
     <div class="asset-grid" id="assetGrid"></div>
     <hr class="divider">
     <div style="display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE (years)</span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE (years)
+          <span class="gloss-tip">?<span class="gloss-tip-box"><strong>WALE — Weighted Average Lease Expiry</strong><br>The average time remaining across all leases, weighted by income.<br><br>WALE &lt; 2 years signals near-term vacancy risk. Lender impact:<br>• BOQ: +0.60% rate penalty<br>• Westpac: excluded entirely</span></span>
+        </span>
         <input type="number" id="p2waleInp" value="2.0" min="0" max="20" step="0.1"
           style="width:72px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:14px;padding:6px 10px;outline:none;text-align:center"
           oninput="onWaleChange()"
@@ -444,9 +474,10 @@
     </div>
   </div>
 
+  <div class="step-connector no-print"></div>
   <div class="card no-print">
     <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:0" onclick="toggleAssume()">
-      <span>Lender Assumptions &nbsp;<span class="est-tag">edit to override defaults</span></span>
+      <span><span class="step-badge">4</span>Lender Assumptions <span class="est-tag" style="font-size:10px">✏️ rates &amp; buffers editable</span></span>
       <div style="display:flex;align-items:center;gap:10px">
         <button class="print-tab-btn" onclick="event.stopPropagation();p2ResetAssumptions()" style="font-size:11px;padding:4px 10px">Reset Defaults</button>
         <span id="assumeChev" class="ftc-chevron ftc-chev-closed">&#9660;</span>
@@ -471,12 +502,13 @@
 
   <div class="card no-print">
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
-      <span>2. Property &amp; Yield Inputs</span>
+      <span><span class="step-badge">2</span>Property &amp; Yield Inputs</span>
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.3px">
         <input type="checkbox" id="p3syncCheck" onchange="toggleP3Sync()" style="accent-color:#3b82f6;width:13px;height:13px">
         Sync price from Tab 1
       </label>
     </div>
+    <p style="font-size:12px;color:#475569;margin:-4px 0 16px;line-height:1.5">Enter a purchase price and net yield to see the maximum LVR each lender will allow — and whether yield or lender policy is the binding constraint.</p>
     <div class="grid-2">
       <div class="field">
         <label>Purchase Price</label>
@@ -485,21 +517,24 @@
       </div>
       <div class="field">
         <div id="p3yieldWrap">
-          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span></label>
+          <label>Net Yield % <span style="color:#475569;font-weight:400">— toggle below for $ rent</span>
+            <span class="gloss-tip">?<span class="gloss-tip-box"><strong>Net Yield</strong><br>Annual rent after all outgoings (vacancy, property management, rates, insurance, maintenance) ÷ purchase price × 100.<br><br>Use net — not gross — yield. Entering gross will overstate the max LVR.</span></span>
+          </label>
           <input type="text" id="p3yield" placeholder="e.g. 6.50" inputmode="decimal" value="5.50">
         </div>
         <div id="p3rentWrap" style="display:none">
           <label>Annual Net Rent ($) <span style="color:#475569;font-weight:400">— toggle below for % yield</span></label>
           <input type="text" id="p3rent" inputmode="numeric" placeholder="e.g. 150,000">
         </div>
-        <div class="field-hint" id="p3yieldHint">Annual net rent as % of purchase price</div>
+        <div class="field-hint" id="p3yieldHint">Net of vacancy, PM fees, rates &amp; insurance — not gross rent</div>
       </div>
     </div>
     <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
-      <label class="toggle-label" onclick="toggleP3YieldMode()">
-        <span class="toggle-track" id="p3ymTrack"><span class="toggle-thumb"></span></span>
-        <span style="font-size:13px;font-weight:600;color:#94a3b8">Enter as annual net rent ($) instead</span>
-      </label>
+      <span style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Input mode</span>
+      <span class="yield-mode-pill">
+        <span class="yield-mode-opt active" id="p3ymPctBtn" onclick="if(p3YieldMode!=='pct')toggleP3YieldMode()">% Yield</span>
+        <span class="yield-mode-opt" id="p3ymRentBtn" onclick="if(p3YieldMode!=='rent')toggleP3YieldMode()">$ Rent</span>
+      </span>
     </div>
     <hr class="divider">
     <div class="section-label">Asset Type</div>
@@ -507,7 +542,9 @@
     <hr class="divider">
     <div style="display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE (years)</span>
+        <span style="font-size:13px;font-weight:600;color:#94a3b8">WALE (years)
+          <span class="gloss-tip">?<span class="gloss-tip-box"><strong>WALE — Weighted Average Lease Expiry</strong><br>The average time remaining across all leases, weighted by income.<br><br>WALE &lt; 2 years signals near-term vacancy risk. Lender impact:<br>• BOQ: +0.60% rate penalty<br>• Westpac: excluded entirely</span></span>
+        </span>
         <input type="number" id="p3waleInp" value="2.0" min="0" max="20" step="0.1"
           style="width:72px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:14px;padding:6px 10px;outline:none;text-align:center"
           oninput="onP3WaleChange()"
@@ -521,9 +558,10 @@
     </div>
   </div>
 
+  <div class="step-connector no-print"></div>
   <div class="card no-print">
     <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:0" onclick="toggleP3Assume()">
-      <span>Lender Assumptions &nbsp;<span class="est-tag">independent from Tab 2 — edit to override</span></span>
+      <span><span class="step-badge">3</span>Lender Assumptions <span class="est-tag" style="font-size:10px">✏️ rates &amp; buffers editable · independent from Tab 2</span></span>
       <div style="display:flex;align-items:center;gap:10px">
         <button class="print-tab-btn" onclick="event.stopPropagation();p3ResetAssumptions()" style="font-size:11px;padding:4px 10px">Reset Defaults</button>
         <span id="p3assumeChev" class="ftc-chevron ftc-chev-closed">&#9660;</span>
@@ -580,6 +618,7 @@ let p3WaleToggle   = false;
 let p3WaleYears    = 2.0;
 let p3DevLeaseback = false;
 let p3SyncPrice    = false;
+let p3UserEdited   = false; // true once user changes p3price or p3yield from defaults
 </script>
 
 <!-- ============================================================
@@ -1508,10 +1547,12 @@ function toggleDevLeaseback() {
 function toggleYieldMode() {
   p2YieldMode=p2YieldMode==='pct'?'rent':'pct';
   var isPct=p2YieldMode==='pct';
-  document.getElementById('p2ymTrack').className='toggle-track'+(isPct?'':' on');
   document.getElementById('p2yieldWrap').style.display=isPct?'':'none';
   document.getElementById('p2rentWrap').style.display =isPct?'none':'';
-  document.getElementById('p2yieldHint').textContent  =isPct?'Annual net rent as % of purchase price':'Total annual net rental income';
+  document.getElementById('p2yieldHint').textContent  =isPct?'Net of vacancy, PM fees, rates & insurance — not gross rent':'Total annual net rental income';
+  var pb=document.getElementById('p2ymPctBtn'),rb=document.getElementById('p2ymRentBtn');
+  if(pb) pb.classList.toggle('active',isPct);
+  if(rb) rb.classList.toggle('active',!isPct);
   p2Calc();
 }
 function toggleAssume() {
@@ -1689,7 +1730,7 @@ function p2RenderResults(run, funds, yieldPct, annualRent, lvrCap) {
     '<th class="r" id="p2th_lvr"       onclick="p2SortTable(\'lvr\')">LVR<span class="sort-arrow"></span></th>'+
     '<th class="r" id="p2th_rate"      onclick="p2SortTable(\'rate\')">Rate<span class="sort-arrow"></span></th>'+
     '<th class="r" id="p2th_assessRate" onclick="p2SortTable(\'assessRate\')">Assess<span class="sort-arrow"></span></th>'+
-    '<th class="r" id="p2th_icrActual" onclick="p2SortTable(\'icrActual\')">ICR<span class="sort-arrow"></span></th>'+
+    '<th class="r" id="p2th_icrActual" onclick="p2SortTable(\'icrActual\')"><span class="tip">ICR<span class="tip-box" style="width:220px;white-space:normal"><strong>ICR — Interest Coverage Ratio</strong><br>Net rent ÷ annual interest. Lenders require a minimum ICR (typically 1.3–2.0×) to ensure the property can service the debt with a buffer.<br><br>Assessment rate = actual rate + lender buffer.</span></span><span class="sort-arrow"></span></th>'+
     '<th class="r">Monthly IO</th><th class="r">Min Yield</th><th class="r">Val</th>'+
     '</tr></thead>';
 
@@ -1832,10 +1873,12 @@ function p3GetLenderConfig(id) {
 function toggleP3YieldMode() {
   p3YieldMode=p3YieldMode==='pct'?'rent':'pct';
   var isPct=p3YieldMode==='pct';
-  document.getElementById('p3ymTrack').className='toggle-track'+(isPct?'':' on');
   document.getElementById('p3yieldWrap').style.display=isPct?'':'none';
   document.getElementById('p3rentWrap').style.display =isPct?'none':'';
-  document.getElementById('p3yieldHint').textContent  =isPct?'Annual net rent as % of purchase price':'Total annual net rental income';
+  document.getElementById('p3yieldHint').textContent  =isPct?'Net of vacancy, PM fees, rates & insurance — not gross rent':'Total annual net rental income';
+  var pb=document.getElementById('p3ymPctBtn'),rb=document.getElementById('p3ymRentBtn');
+  if(pb) pb.classList.toggle('active',isPct);
+  if(rb) rb.classList.toggle('active',!isPct);
   p3Calc();
 }
 function toggleP3DevLeaseback() {
@@ -1948,6 +1991,14 @@ function p3Calc() {
   // Cache rows for sort-only DOM updates (p3SortTable re-sorts without recomputing)
   lastP3Rows={rows:rows,best:best,lowestRate:lowestRate,fA:fA};
   var html='';
+
+  // ── Placeholder callout ───────────────────────────────────
+  if(!p3UserEdited){
+    html+='<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">'+
+      '<span style="font-size:16px">💡</span>'+
+      '<span style="font-size:12px;color:#93c5fd;line-height:1.5"><strong>Using default values</strong> — update the purchase price and yield above to see results for your specific deal.</span>'+
+    '</div>';
+  }
 
   // ── Summary bar ───────────────────────────────────────
   if(best){
@@ -2249,7 +2300,7 @@ function loadFromURL() {
   if(p.get('p2dl')==='1'){ p2DevLeaseback=true; document.getElementById('p2dlTrack').className='toggle-track on'; }
 
   // Phase 3
-  var p3pr=p.get('p3price'); if(p3pr) setInp('p3price', p3pr);
+  var p3pr=p.get('p3price'); if(p3pr){ setInp('p3price', p3pr); p3UserEdited=true; }
   var p3ym=p.get('p3yieldmode');
   if(p3ym==='rent'){ toggleP3YieldMode(); }
   var p3y=p.get('p3yield'); if(p3y){ var el3=document.getElementById('p3yield'); if(el3) el3.value=p3y; }
@@ -2376,6 +2427,7 @@ function updateCommercialTabs() {
 (function init() {
   // ── State buttons — call calcAll so both tabs refresh ──
   var grid=document.getElementById('stateGrid');
+  if(grid) grid.classList.add('state-grid-unset');
   STATES.forEach(function(s){
     var b=document.createElement('button');
     b.className='state-btn'; b.textContent=s;
@@ -2383,6 +2435,7 @@ function updateCommercialTabs() {
       selectedState=s;
       document.querySelectorAll('.state-btn').forEach(function(x){x.classList.remove('active');});
       b.classList.add('active');
+      if(grid) grid.classList.remove('state-grid-unset');
       calcAll();
     };
     grid.appendChild(b);
@@ -2390,7 +2443,7 @@ function updateCommercialTabs() {
 
   // ── NSW default state ──────────────────────────────────
   selectedState='NSW';
-  // Find by text since buttons were just created without data-state
+  if(grid) grid.classList.remove('state-grid-unset'); // NSW pre-selected — no pulse needed
   grid.querySelectorAll('.state-btn').forEach(function(b){
     if(b.textContent==='NSW') b.classList.add('active');
   });
@@ -2474,9 +2527,9 @@ function updateCommercialTabs() {
   document.getElementById('p2lvrcap').addEventListener('input',function(){p2Calc();});
 
   // ── Phase 3 event listeners ────────────────────────────
-  document.getElementById('p3price').addEventListener('input',function(e){fmtInp(e);p3Calc();});
-  document.getElementById('p3yield').addEventListener('input',function(){p3Calc();});
-  document.getElementById('p3rent').addEventListener('input',function(e){fmtInp(e);p3Calc();});
+  document.getElementById('p3price').addEventListener('input',function(e){p3UserEdited=true;fmtInp(e);p3Calc();});
+  document.getElementById('p3yield').addEventListener('input',function(){p3UserEdited=true;p3Calc();});
+  document.getElementById('p3rent').addEventListener('input',function(e){p3UserEdited=true;fmtInp(e);p3Calc();});
 
   // ── Build Phase 3 assumptions table (independent IDs: p3r_, p3b_, etc.) ──
   var tbl3='<table class="assume-table"><thead><tr>'+
